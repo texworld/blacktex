@@ -15,3 +15,16 @@ def test_multiple_spaces():
     out = tidytex.clean(input_string)
     assert out == """lorem ipsum dolor sit amet"""
     return
+
+
+def test_dollar_dollar():
+    input_string = """some statement
+$$a + b = c$$
+more text"""
+    out = tidytex.clean(input_string)
+    assert out == """some statement
+\\[
+a + b = c
+\\]
+more text"""
+    return
