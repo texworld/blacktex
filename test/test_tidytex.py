@@ -31,6 +31,13 @@ def test_multiple_spaces():
     return
 
 
+def test_multiple_newlines():
+    input_string = """lorem  \n\n\n ipsum dolor sit  amet"""
+    out = tidytex.clean(input_string)
+    assert out == """lorem\n\n ipsum dolor sit amet"""
+    return
+
+
 def test_dollar_dollar():
     input_string = """some statement
 $$a + b = c$$

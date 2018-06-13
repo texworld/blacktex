@@ -21,6 +21,11 @@ def _remove_multiple_spaces(string):
     return re.sub(" +", " ", string)
 
 
+def _remove_multiple_newlines(string):
+    string = re.sub("\n\n\n", "\n\n", string)
+    return string
+
+
 def _replace_dollar_dollar(string):
     '''Replace $$...$$ by \[...\].
     '''
@@ -59,10 +64,9 @@ def clean(string):
 
     out = _remove_comments(out)
     out = _remove_trailing_whitespace(out)
+    out = _remove_multiple_newlines(out)
     out = _remove_multiple_spaces(out)
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
-
-    # TODO remove multiple newlines
 
     return out
