@@ -87,3 +87,10 @@ def test_punctuation_outside_math():
     out = tidytex.clean(input_string)
     assert out == "$a+b=c$."
     return
+
+
+def test_whitespace_before_punctuation():
+    input_string = "Some text ."
+    out = tidytex.clean(input_string)
+    assert out == "Some text."
+    return

@@ -79,14 +79,24 @@ def _replace_triple_dots(string):
 
 def _replace_punctuation_outside_math(string):
     string = re.sub("\\.\\$", "$.", string)
-    string = re.sub("\\,\\$", "$,", string)
-    string = re.sub("\\;\\$", "$;", string)
+    string = re.sub(",\\$", "$,", string)
+    string = re.sub(";\\$", "$;", string)
+    string = re.sub("!\\$", "$!", string)
+    string = re.sub("\?\\$", "$?", string)
+    return string
+
+
+def _remove_whitespace_before_punctuation(string):
+    string = re.sub("\s+\.", ".", string)
+    string = re.sub("\s+,", ",", string)
+    string = re.sub("\s+;", ";", string)
+    string = re.sub("\s+!", "!", string)
+    string = re.sub("\s+\?", "?", string)
     return string
 
 
 def clean(string):
     out = string
-
     out = _remove_comments(out)
     out = _remove_trailing_whitespace(out)
     out = _remove_multiple_newlines(out)
@@ -97,4 +107,5 @@ def clean(string):
     out = _add_space_after_single_exponent(out)
     out = _replace_triple_dots(out)
     out = _replace_punctuation_outside_math(out)
+    out = _remove_whitespace_before_punctuation(out)
     return out
