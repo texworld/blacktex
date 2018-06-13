@@ -59,3 +59,10 @@ a + b = c
 more text"""
     )
     return
+
+
+def test_whitespace_after_curly():
+    input_string = """\\textit{ \nlorem  \n\n\n ipsum dolor sit  amet}"""
+    out = tidytex.clean(input_string)
+    assert out == """\\textit{lorem\n\n ipsum dolor sit amet}"""
+    return

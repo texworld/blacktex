@@ -29,6 +29,11 @@ def _remove_multiple_newlines(string):
     return string
 
 
+def _remove_whitespace_after_curly(string):
+    string = re.sub("{\s+", "{", string)
+    return string
+
+
 def _replace_dollar_dollar(string):
     """Replace $$...$$ by \[...\].
     """
@@ -71,5 +76,5 @@ def clean(string):
     out = _remove_multiple_spaces(out)
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
-
+    out = _remove_whitespace_after_curly(out)
     return out
