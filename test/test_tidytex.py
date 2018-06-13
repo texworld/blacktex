@@ -122,3 +122,10 @@ def test_over_frac():
     out = tidytex.clean(input_string)
     assert out == "Some $\\frac{2}{3^{4+x}}$ equation $\\frac{\\pi}{4}$."
     return
+
+
+def test_linebreak_after_double_backslash():
+    input_string = "Some $2\\\\3 4\\\\\n6$."
+    out = tidytex.clean(input_string)
+    assert out == "Some $2\\\\\n3 4\\\\\n6$."
+    return

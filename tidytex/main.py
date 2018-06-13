@@ -113,8 +113,8 @@ def _substitute_string_ranges(string, ranges, replacements):
     if ranges:
         lst = [string[: ranges[0][0]]]
         for k, replacement in enumerate(replacements[:-1]):
-            lst += [replacement, string[ranges[k][1] + 1 : ranges[k + 1][0]]]
-        lst += [replacements[-1], string[ranges[-1][1] + 1 :]]
+            lst += [replacement, string[ranges[k][1] : ranges[k + 1][0]]]
+        lst += [replacements[-1], string[ranges[-1][1] :]]
         string = "".join(lst)
     return string
 
@@ -150,11 +150,24 @@ def _replace_over(string):
         denominator = string[loc + 5 : k1 - 1].strip()
 
         fracs.append((numerator, denominator))
-        ranges.append((k0 + 1, k1 - 1))
+        ranges.append((k0 + 1, k1))
 
     fracs = ["\\frac{{{}}}{{{}}}".format(num, den) for num, den in fracs]
 
     return _substitute_string_ranges(string, ranges, fracs)
+
+
+def _add_linebreak_after_double_backslash(string):
+    p = re.compile(r"\\\\")
+    locations = [m.start() for m in p.finditer(string)]
+    insert = []
+    for loc in locations:
+        if string[loc + 2] != "\n":
+            insert.append(loc)
+
+    return _substitute_string_ranges(
+        string, [(i + 2, i + 2) for i in insert], len(insert) * ["\n"]
+    )
 
 
 def clean(string):
@@ -173,4 +186,5 @@ def clean(string):
     out = _add_nbsp_before_reference(out)
     out = _replace_double_nbsp(out)
     out = _replace_over(out)
+    out = _add_linebreak_after_double_backslash(out)
     return out
