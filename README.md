@@ -4,7 +4,6 @@ Cleans up your LaTeX files.
 
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/tidytex/master.svg)](https://circleci.com/gh/nschloe/tidytex/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/tidytex.svg)](https://codecov.io/gh/nschloe/tidytex)
-[![Codacy grade](https://img.shields.io/codacy/grade/b23fbc2af9884315bd7d6275aa2629b6.svg)](https://app.codacy.com/app/nschloe/tidytex/dashboard)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![PyPi Version](https://img.shields.io/pypi/v/tidytex.svg)](https://pypi.python.org/pypi/tidytex)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/tidytex.svg?logo=github&label=Stars)](https://github.com/nschloe/tidytex)
