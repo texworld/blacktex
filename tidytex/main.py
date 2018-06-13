@@ -3,12 +3,26 @@
 import re
 
 
+def _remove_comments(string):
+    # https://stackoverflow.com/a/2319116/353337
+    # remove all occurance singleline comments (//COMMENT\n ) from string
+    string = re.sub(re.compile("%.*?\n") , "\n", string)
+    string = re.sub(re.compile("%.*?$") , "", string)
+    return string
+
+
+def _remove_trailing_whitespace(string):
+    string = re.sub(" +\n", "\n", string)
+    string = re.sub(" +$", "", string)
+    return string
+
+
 def clean(string):
 
     out = string
 
-    # remove trailing whitespace
-    out = re.sub(" +\n", "\n", out)
+    out = _remove_comments(out)
+    out = _remove_trailing_whitespace(out)
 
     # Check for {\it ... }
     out = out.replace("{\\it ", "\\itshape{")
