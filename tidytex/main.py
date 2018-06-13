@@ -67,6 +67,11 @@ def _replace_obsolete_text_mods(string):
     return string
 
 
+def _add_space_after_single_exponent(string):
+    string = re.sub("\\^([^{])([^ ])", "^\\1 \\2", string)
+    return string
+
+
 def clean(string):
     out = string
 
@@ -77,4 +82,5 @@ def clean(string):
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_after_curly(out)
+    out = _add_space_after_single_exponent(out)
     return out

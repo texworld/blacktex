@@ -66,3 +66,10 @@ def test_whitespace_after_curly():
     out = tidytex.clean(input_string)
     assert out == """\\textit{lorem\n\n ipsum dolor sit amet}"""
     return
+
+
+def test_exponent_space():
+    input_string = "2^ng"
+    out = tidytex.clean(input_string)
+    assert out == "2^n g"
+    return
