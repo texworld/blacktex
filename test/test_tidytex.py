@@ -43,9 +43,12 @@ def test_dollar_dollar():
 $$a + b = c$$
 more text"""
     out = tidytex.clean(input_string)
-    assert out == """some statement
+    assert (
+        out
+        == """some statement
 \\[
 a + b = c
 \\]
 more text"""
+    )
     return

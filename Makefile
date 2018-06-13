@@ -1,4 +1,4 @@
-VERSION=$(shell python3 -c "import tablify; print(tablify.__version__)")
+VERSION=$(shell python3 -c "import tidytex; print(tidytex.__version__)")
 
 default:
 	@echo "\"make publish\"?"
@@ -24,5 +24,5 @@ clean:
 	@rm -rf *.egg-info/ build/ dist/ MANIFEST
 
 lint:
-	black --check setup.py tablify/ test/*.py
-	flake8 setup.py tablify/ test/*.py
+	black --check setup.py tidytex/ test/*.py tools/tidytex
+	flake8 setup.py tidytex/ test/*.py tools/tidytex

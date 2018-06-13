@@ -6,8 +6,8 @@ import re
 def _remove_comments(string):
     # https://stackoverflow.com/a/2319116/353337
     # remove all occurance singleline comments (//COMMENT\n ) from string
-    string = re.sub(re.compile("%.*?\n") , "\n", string)
-    string = re.sub(re.compile("%.*?$") , "", string)
+    string = re.sub(re.compile("%.*?\n"), "\n", string)
+    string = re.sub(re.compile("%.*?$"), "", string)
     return string
 
 
@@ -27,8 +27,8 @@ def _remove_multiple_newlines(string):
 
 
 def _replace_dollar_dollar(string):
-    '''Replace $$...$$ by \[...\].
-    '''
+    """Replace $$...$$ by \[...\].
+    """
     p = re.compile("\\$\\$")
     locations = [m.start() for m in p.finditer(string)]
     do_open = True

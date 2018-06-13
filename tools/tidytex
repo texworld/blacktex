@@ -11,42 +11,40 @@ def _main():
     args = _parse_options()
     data = args.infile.read()
 
-    data = tidytex.tidytex(data)
+    data = tidytex.clean(data)
     print(data)
     return
 
 
 def _parse_options():
-    parser = argparse.ArgumentParser(description='Clean up LaTeX files.')
+    parser = argparse.ArgumentParser(description="Clean up LaTeX files.")
 
     parser.add_argument(
-        'infile',
-        nargs='?',
-        type=argparse.FileType('r'),
+        "infile",
+        nargs="?",
+        type=argparse.FileType("r"),
         default=sys.stdin,
-        help='input table file (default: stdin)'
-        )
+        help="input LaTeX file (default: stdin)",
+    )
 
     parser.add_argument(
-        'outfile',
-        nargs='?',
-        type=argparse.FileType('w'),
+        "outfile",
+        nargs="?",
+        type=argparse.FileType("w"),
         default=sys.stdout,
-        help='output table file (default: stdout)'
-        )
+        help="output LaTeX file (default: stdout)",
+    )
 
-    version_text = 'tidytex {}, Python {}.{}.{}'.format(
+    version_text = "tidytex {}, Python {}.{}.{}".format(
         tidytex.__version__,
-        sys.version_info.major, sys.version_info.minor, sys.version_info.micro
-        )
-    parser.add_argument(
-        '--version', '-v',
-        action='version',
-        version=version_text
-        )
+        sys.version_info.major,
+        sys.version_info.minor,
+        sys.version_info.micro,
+    )
+    parser.add_argument("--version", "-v", action="version", version=version_text)
 
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _main()
