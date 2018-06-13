@@ -73,3 +73,10 @@ def test_exponent_space():
     out = tidytex.clean(input_string)
     assert out == "2^n g"
     return
+
+
+def test_triple_dots():
+    input_string = "a,...,b"
+    out = tidytex.clean(input_string)
+    assert out == "a,\dots,b"
+    return

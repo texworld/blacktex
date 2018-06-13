@@ -72,6 +72,11 @@ def _add_space_after_single_exponent(string):
     return string
 
 
+def _replace_triple_dots(string):
+    string = re.sub("\.\.\.", "\\dots", string)
+    return string
+
+
 def clean(string):
     out = string
 
@@ -83,4 +88,5 @@ def clean(string):
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_after_curly(out)
     out = _add_space_after_single_exponent(out)
+    out = _replace_triple_dots(out)
     return out
