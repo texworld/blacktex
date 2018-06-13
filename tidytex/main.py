@@ -6,6 +6,8 @@ import re
 def _remove_comments(string):
     # https://stackoverflow.com/a/2319116/353337
     string = re.sub(re.compile("^ *%.*?\n"), "", string)
+    string = re.sub(re.compile("\n *%.*?\n"), "\n", string)
+    string = re.sub(re.compile("\n *%.*?$"), "\n", string)
     #
     string = re.sub(re.compile("%.*?\n"), "\n", string)
     string = re.sub(re.compile("%.*?$"), "", string)
