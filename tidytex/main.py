@@ -44,7 +44,13 @@ def _replace_dollar_dollar(string):
 
 
 def _replace_obsolete_text_mods(string):
-    string = string.replace("{\\it ", "\\itshape{")
+    string = string.replace("{\\bf ", "\\textbf{")
+    string = string.replace("{\\it ", "\\textit{")
+    string = string.replace("{\\rm ", "\\textrm{")
+    string = string.replace("{\\sc ", "\\textsc{")
+    string = string.replace("{\\sf ", "\\textsf{")
+    string = string.replace("{\\sl ", "\\textsl{")
+    string = string.replace("{\\tt ", "\\texttt{")
     return string
 
 

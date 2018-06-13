@@ -17,10 +17,10 @@ def test_trailing_whitespace():
     return
 
 
-def test_itshape():
+def test_obsolete_text_mod():
     input_string = """lorem {\\it ipsum dolor} sit amet"""
     out = tidytex.clean(input_string)
-    assert out == """lorem \\itshape{ipsum dolor} sit amet"""
+    assert out == """lorem \\textit{ipsum dolor} sit amet"""
     return
 
 
