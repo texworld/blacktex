@@ -95,6 +95,18 @@ def _remove_whitespace_before_punctuation(string):
     return string
 
 
+def _add_nbsp_before_reference(string):
+    string = re.sub("\s+\\\\ref{", "~\\\\ref{", string)
+    string = re.sub("\s+\\\\eqref{", "~\\\\eqref{", string)
+    string = re.sub("\s+\\\\cite", "~\\\\cite", string)
+    return string
+
+
+def _replace_double_nbsp(string):
+    string = re.sub("~~", "\\quad ", string)
+    return string
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -108,4 +120,6 @@ def clean(string):
     out = _replace_triple_dots(out)
     out = _replace_punctuation_outside_math(out)
     out = _remove_whitespace_before_punctuation(out)
+    out = _add_nbsp_before_reference(out)
+    out = _replace_double_nbsp(out)
     return out

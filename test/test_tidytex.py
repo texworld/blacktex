@@ -94,3 +94,17 @@ def test_whitespace_before_punctuation():
     out = tidytex.clean(input_string)
     assert out == "Some text."
     return
+
+
+def test_nbsp_before_ref():
+    input_string = "Some text \\ref{something}."
+    out = tidytex.clean(input_string)
+    assert out == "Some text~\\ref{something}."
+    return
+
+
+def test_double_nbsp():
+    input_string = "Some~~text."
+    out = tidytex.clean(input_string)
+    assert out == "Some\quad text."
+    return
