@@ -82,6 +82,13 @@ def test_triple_dots():
     return
 
 
+def test_ldots_cdots():
+    input_string = "Some $1,\cdots,n$ or $1,\ldots,n$."
+    out = tidytex.clean(input_string)
+    assert out == "Some $1,\dots,n$ or $1,\dots,n$."
+    return
+
+
 def test_punctuation_outside_math():
     input_string = "$a+b=c.$"
     out = tidytex.clean(input_string)
