@@ -107,6 +107,54 @@ def _replace_double_nbsp(string):
     return string
 
 
+def _substitute_string_ranges(string, ranges, replacements):
+    if ranges:
+        lst = [string[: ranges[0][0]]]
+        for k, replacement in enumerate(replacements[:-1]):
+            lst += [replacement, string[ranges[k][1] + 1 : ranges[k + 1][0]]]
+        lst += [replacements[-1], string[ranges[-1][1] + 1 :]]
+        string = "".join(lst)
+    return string
+
+
+def _replace_over(string):
+    p = re.compile("\\\\over")
+    locations = [m.start() for m in p.finditer(string)]
+
+    fracs = []
+    ranges = []
+
+    for loc in locations:
+        # Starting from loc, search to the left for an open {
+        num_open_brackets = 1
+        k0 = loc
+        while num_open_brackets > 0:
+            if string[k0] == "{":
+                num_open_brackets -= 1
+            elif string[k0] == "}":
+                num_open_brackets += 1
+            k0 -= 1
+        numerator = string[k0 + 2 : loc].strip()
+
+        # Starting from loc+5, search to the right for an open }
+        num_open_brackets = 1
+        k1 = loc + 5
+        while num_open_brackets > 0:
+            if string[k1] == "}":
+                num_open_brackets -= 1
+            elif string[k1] == "{":
+                num_open_brackets += 1
+            k1 += 1
+        denominator = string[loc + 5 : k1 - 1].strip()
+
+        fracs.append((numerator, denominator))
+        ranges.append((k0 + 1, k1 - 1))
+
+    fracs = ["\\frac{{{}}}{{{}}}".format(num, den) for num, den in fracs]
+
+    return _substitute_string_ranges(string, ranges, fracs)
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -122,4 +170,5 @@ def clean(string):
     out = _remove_whitespace_before_punctuation(out)
     out = _add_nbsp_before_reference(out)
     out = _replace_double_nbsp(out)
+    out = _replace_over(out)
     return out

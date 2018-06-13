@@ -108,3 +108,10 @@ def test_double_nbsp():
     out = tidytex.clean(input_string)
     assert out == "Some\quad text."
     return
+
+
+def test_over_frac():
+    input_string = "Some ${2\\over 3^{4+x}}$ equation ${\\pi \\over4}$."
+    out = tidytex.clean(input_string)
+    assert out == "Some $\\frac{2}{3^{4+x}}$ equation $\\frac{\\pi}{4}$."
+    return
