@@ -11,10 +11,8 @@ import tidytex
 
 def _main():
     args = _parse_options()
-    data = args.infile.read()
-
-    data = tidytex.clean(data)
-    print(data, end="")
+    out = tidytex.clean(args.infile.read())
+    print(out, end="")
     return
 
 

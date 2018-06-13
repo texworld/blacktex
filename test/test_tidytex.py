@@ -10,6 +10,13 @@ def test_comments():
     return
 
 
+def test_comment_lines():
+    input_string = """% lorem some comment  \n sit amet"""
+    out = tidytex.clean(input_string)
+    assert out == """ sit amet"""
+    return
+
+
 def test_trailing_whitespace():
     input_string = """lorem    \n sit amet"""
     out = tidytex.clean(input_string)
