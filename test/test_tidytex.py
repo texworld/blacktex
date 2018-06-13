@@ -80,3 +80,10 @@ def test_triple_dots():
     out = tidytex.clean(input_string)
     assert out == "a,\dots,b"
     return
+
+
+def test_punctuation_outside_math():
+    input_string = "$a+b=c.$"
+    out = tidytex.clean(input_string)
+    assert out == "$a+b=c$."
+    return

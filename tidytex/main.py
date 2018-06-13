@@ -77,6 +77,13 @@ def _replace_triple_dots(string):
     return string
 
 
+def _replace_punctuation_outside_math(string):
+    string = re.sub("\\.\\$", "$.", string)
+    string = re.sub("\\,\\$", "$,", string)
+    string = re.sub("\\;\\$", "$;", string)
+    return string
+
+
 def clean(string):
     out = string
 
@@ -89,4 +96,5 @@ def clean(string):
     out = _remove_whitespace_after_curly(out)
     out = _add_space_after_single_exponent(out)
     out = _replace_triple_dots(out)
+    out = _replace_punctuation_outside_math(out)
     return out
