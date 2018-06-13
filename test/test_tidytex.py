@@ -3,6 +3,13 @@
 import tidytex
 
 
+def test_trailing_whitespace():
+    input_string = """lorem    \n sit amet"""
+    out = tidytex.clean(input_string)
+    assert out == """lorem\n sit amet"""
+    return
+
+
 def test_itshape():
     input_string = """lorem {\\it ipsum dolor} sit amet"""
     out = tidytex.clean(input_string)

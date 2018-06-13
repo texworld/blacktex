@@ -7,13 +7,15 @@ def clean(string):
 
     out = string
 
+    # remove trailing whitespace
+    out = re.sub(" +\n", "\n", out)
+
     # Check for {\it ... }
     out = out.replace("{\\it ", "\\itshape{")
 
     # Replace multiple spaces by one
     out = re.sub(" +", " ", out)
 
-    # TODO remove trailing whitespace
     # TODO remove comments
     # TODO remove multiple newlines
 
