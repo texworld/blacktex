@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 #
-import pytest
-
-import tablify
+import tidytex
 
 
 def test_plain():
-    data = """A  1.34  -214.1\nCCCC 55.534 1131.1"""
-    ref = """A     1.34  -214.1\nCCCC 55.534 1131.1"""
-    assert tablify.tablify(data) == ref
+    input_string = """lorem {\\it ipsum dolor} sit amet"""
+    out = tidytex.clean(input_string)
+    assert out == """lorem \\itshape{ipsum dolor} sit amet"""
     return

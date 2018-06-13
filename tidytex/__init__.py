@@ -10,7 +10,7 @@ from .__about__ import (
     __website__,
 )
 
-from .main import tidytex
+from .main import clean
 
 __all__ = [
     "__copyright__",
@@ -18,7 +18,7 @@ __all__ = [
     "__author__",
     "__author_email__",
     "__website__",
-    "tidytex",
+    "clean",
 ]
 
 # try:
