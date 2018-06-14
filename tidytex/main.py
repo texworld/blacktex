@@ -39,21 +39,19 @@ def _replace_dollar_dollar(string):
     """
     p = re.compile("\\$\\$")
     locations = [m.start() for m in p.finditer(string)]
-    do_open = True
-    offset = 0
-    for loc in locations:
-        insert = "\\[" if do_open else "\\]"
-        off = 0
-        if string[loc - 1 + offset] != "\n":
-            insert = "\n" + insert
-            off += 1
-        if string[loc + 2 + offset] != "\n":
-            insert += "\n"
-            off += 1
-        string = string[: loc + offset] + insert + string[loc + 2 + offset :]
-        do_open = not do_open
-        offset += off
-    return string
+    assert len(locations) % 2 == 0
+
+    k = 0
+    ranges = []
+    replacements = []
+    while k < len(locations):
+        ranges.append((locations[k], locations[k + 1] + 2))
+        replacements.append(
+            "\\[\n" + string[locations[k] + 2 : locations[k + 1]] + "\n\\]"
+        )
+        k += 2
+
+    return _substitute_string_ranges(string, ranges, replacements)
 
 
 def _replace_obsolete_text_mods(string):
