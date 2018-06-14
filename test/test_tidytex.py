@@ -81,6 +81,10 @@ def test_exponent_space():
     input_string = "2^ng"
     out = tidytex.clean(input_string)
     assert out == "2^n g"
+
+    input_string = "$1/n^3$."
+    out = tidytex.clean(input_string)
+    assert out == "$1/n^3$."
     return
 
 
