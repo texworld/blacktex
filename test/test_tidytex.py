@@ -48,9 +48,9 @@ def test_multiple_spaces():
 
 
 def test_multiple_newlines():
-    input_string = """lorem  \n\n\n ipsum dolor sit  amet"""
+    input_string = """lorem  \n\n\n\n ipsum dolor sit  amet"""
     out = tidytex.clean(input_string)
-    assert out == """lorem\n\n ipsum dolor sit amet"""
+    assert out == """lorem\n\n\n ipsum dolor sit amet"""
     return
 
 
@@ -64,7 +64,7 @@ def test_dollar_dollar():
 def test_whitespace_after_curly():
     input_string = """\\textit{ \nlorem  \n\n\n ipsum dolor sit  amet}"""
     out = tidytex.clean(input_string)
-    assert out == """\\textit{lorem\n\n ipsum dolor sit amet}"""
+    assert out == """\\textit{lorem\n\n\n ipsum dolor sit amet}"""
     return
 
 

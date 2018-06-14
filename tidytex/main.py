@@ -27,7 +27,7 @@ def _remove_multiple_spaces(string):
 
 
 def _remove_multiple_newlines(string):
-    string = re.sub("\n\n\n", "\n\n", string)
+    string = re.sub("\n\n\n\n", "\n\n\n", string)
     return string
 
 
