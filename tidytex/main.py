@@ -19,9 +19,7 @@ def _remove_comments(string):
 
 
 def _remove_trailing_whitespace(string):
-    string = re.sub(" +\n", "\n", string)
-    string = re.sub(" +$", "", string)
-    return string
+    return "\n".join([line.rstrip() for line in string.split("\n")])
 
 
 def _remove_multiple_spaces(string):
