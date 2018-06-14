@@ -51,7 +51,7 @@ def _replace_dollar_dollar(string):
     while k < len(locations):
         ranges.append((locations[k], locations[k + 1] + 2))
         replacements.append(
-            "\\[\n" + string[locations[k] + 2 : locations[k + 1]] + "\n\\]"
+            "\\[" + string[locations[k] + 2 : locations[k + 1]] + "\\]"
         )
         k += 2
 
@@ -255,7 +255,7 @@ def _replace_def_by_newcommand(string):
 def _add_linebreak_around_begin_end(string):
     insert = []
 
-    for m in [r"\\begin{[^}]+}", r"\\end{[^}]+}"]:
+    for m in [r"\\begin{[^}]+}", r"\\end{[^}]+}", r"\\\[", r"\\\]"]:
         p = re.compile(m)
         for m in p.finditer(string):
             k = m.start()

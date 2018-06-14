@@ -55,18 +55,9 @@ def test_multiple_newlines():
 
 
 def test_dollar_dollar():
-    input_string = """some statement
-$$a + b = c$$
-more text"""
+    input_string = """a $$a + b = c$$ b"""
     out = tidytex.clean(input_string)
-    assert (
-        out
-        == """some statement
-\\[
-a + b = c
-\\]
-more text"""
-    )
+    assert out == """a \n\\[\na + b = c\n\\]\n b"""
     return
 
 
@@ -174,9 +165,14 @@ def test_def_newcommand():
 
 
 def test_linebreak_around_begin_end():
-    input_string = "A\\begin{equation}a+b=c\\end{equation} B \n\\begin{a}\nd+e+f\n\\end{a}\nB"
+    input_string = (
+        "A\\begin{equation}a+b=c\\end{equation} B \n\\begin{a}\nd+e+f\n\\end{a}\nB"
+    )
     out = tidytex.clean(input_string)
-    assert out == "A\n\\begin{equation}\na+b=c\n\\end{equation}\n B\n\\begin{a}\nd+e+f\n\\end{a}\nB"
+    assert (
+        out
+        == "A\n\\begin{equation}\na+b=c\n\\end{equation}\n B\n\\begin{a}\nd+e+f\n\\end{a}\nB"
+    )
     return
 
 
