@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 import re
+import warnings
 
 
 def _remove_comments(string):
@@ -132,15 +133,33 @@ def _replace_over(string):
     ranges = []
 
     for loc in locations:
+        skip = False
+
         # Starting from loc, search to the left for an open {
         num_open_brackets = 1
-        k0 = loc
+        k0 = loc - 1
         while num_open_brackets > 0:
-            if string[k0] == "{":
+            try:
+                char0 = string[k0]
+            except IndexError:
+                skip = True
+                break
+
+            if char0 == "{":
                 num_open_brackets -= 1
-            elif string[k0] == "}":
+            elif char0 == "}":
                 num_open_brackets += 1
             k0 -= 1
+
+        if skip:
+            warning = (
+                "Could not convert \\over to \\frac at \n```\n"
+                + string[max(0, loc - 20) : loc + 24]
+                + "\n```\n"
+            )
+            warnings.warn(warning)
+            continue
+
         numerator = string[k0 + 2 : loc].strip()
 
         # Starting from loc+5, search to the right for an open }

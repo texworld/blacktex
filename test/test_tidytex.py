@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #
+import pytest
+
 import tidytex
 
 
@@ -121,6 +123,14 @@ def test_over_frac():
     input_string = "Some ${2\\over 3^{4+x}}$ equation ${\\pi \\over4}$."
     out = tidytex.clean(input_string)
     assert out == "Some $\\frac{2}{3^{4+x}}$ equation $\\frac{\\pi}{4}$."
+    return
+
+
+def test_over_frac_warn():
+    input_string = "Some $2\\over 3^{4+x}$."
+    with pytest.warns(UserWarning):
+        out = tidytex.clean(input_string)
+    assert out == "Some $2\\over 3^{4+x}$."
     return
 
 
