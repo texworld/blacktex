@@ -143,3 +143,10 @@ def test_keywords_without_backslash():
     out = tidytex.clean(input_string)
     assert out == "maximum and logarithm $\\max_x \\log(x)$"
     return
+
+
+def test_curly_around_round_with_exponent():
+    input_string = "$(a+b)^n \\left(a+b\\right)^{n+1}$"
+    out = tidytex.clean(input_string)
+    assert out == "${(a+b)}^n {\\left(a+b\\right)}^{n+1}$"
+    return

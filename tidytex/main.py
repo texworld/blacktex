@@ -188,6 +188,36 @@ def _add_backslash_for_keywords(string):
     )
 
 
+def _add_curly_brackets_around_round_brackets_with_exponent(string):
+    p = re.compile(r"\)\^")
+    locations = [m.start() for m in p.finditer(string)]
+
+    insert = []
+    replacements = []
+    for loc in locations:
+        # Starting from loc, search to the left for an open (
+        num_open_brackets = 1
+        k = loc - 1
+        while num_open_brackets > 0:
+            if string[k] == "(":
+                num_open_brackets -= 1
+            elif string[k] == ")":
+                num_open_brackets += 1
+            k -= 1
+        k += 1
+
+        if k - 5 >= 0 and string[k - 5 : k] == "\\left":
+            insert.append(k - 5)
+        else:
+            insert.append(k)
+        replacements.append("{")
+
+        insert.append(loc + 1)
+        replacements.append("}")
+
+    return _substitute_string_ranges(string, [(i, i) for i in insert], replacements)
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -207,4 +237,5 @@ def clean(string):
     out = _replace_over(out)
     out = _add_linebreak_after_double_backslash(out)
     out = _add_backslash_for_keywords(out)
+    out = _add_curly_brackets_around_round_brackets_with_exponent(out)
     return out
