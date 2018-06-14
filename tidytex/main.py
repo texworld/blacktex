@@ -263,6 +263,10 @@ def _replace_centerline(string):
     return re.sub(r"\\centerline{", r"{\\centering ", string)
 
 
+def _replace_eqnarray(string):
+    return re.sub("eqnarray", "align", string)
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -286,4 +290,5 @@ def clean(string):
     out = _replace_def_by_newcommand(out)
     out = _add_linebreak_around_begin_end(out)
     out = _replace_centerline(out)
+    out = _replace_eqnarray(out)
     return out

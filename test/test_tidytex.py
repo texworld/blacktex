@@ -171,3 +171,10 @@ def test_centerline():
     out = tidytex.clean(input_string)
     assert out == "{\\centering foobar}"
     return
+
+
+def test_eqnarray_align():
+    input_string = "A\\begin{eqnarray*}a+b\\end{eqnarray*}F"
+    out = tidytex.clean(input_string)
+    assert out == "A\n\\begin{align*}\na+b\n\\end{align*}\nF"
+    return
