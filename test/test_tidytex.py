@@ -4,16 +4,23 @@ import tidytex
 
 
 def test_comments():
-    input_string = """lorem  %some comment  \n %sit amet"""
+    input_string = "lorem  %some comment  \n %sit amet"
     out = tidytex.clean(input_string)
-    assert out == """lorem\n"""
+    assert out == "lorem"
     return
 
 
 def test_comment_lines():
-    input_string = """% lorem some comment  \n sit amet"""
+    input_string = "% lorem some comment  \n sit amet"
     out = tidytex.clean(input_string)
-    assert out == """ sit amet"""
+    assert out == " sit amet"
+    return
+
+
+def test_multiple_comment_lines():
+    input_string = "A\n%\n%\nB"
+    out = tidytex.clean(input_string)
+    assert out == "A\nB"
     return
 
 

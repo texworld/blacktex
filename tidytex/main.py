@@ -4,13 +4,16 @@ import re
 
 
 def _remove_comments(string):
+    comment_lines = []
+    lines = string.split("\n")
+    for k, line in enumerate(lines):
+        if len(line) > 0 and line.strip()[0] == "%":
+            comment_lines.append(k)
+    string = "\n".join([lines[k] for k in range(len(lines)) if k not in comment_lines])
+
     # https://stackoverflow.com/a/2319116/353337
-    string = re.sub(re.compile("^ *%.*?\n"), "", string)
-    string = re.sub(re.compile("\n *%.*?\n"), "\n", string)
-    string = re.sub(re.compile("\n *%.*?$"), "\n", string)
-    #
-    string = re.sub(re.compile("%.*?\n"), "\n", string)
-    string = re.sub(re.compile("%.*?$"), "", string)
+    string = re.sub("%.*?\n", "\n", string)
+    string = re.sub("%.*?$", "", string)
     return string
 
 
