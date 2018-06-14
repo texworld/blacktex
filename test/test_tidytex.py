@@ -82,13 +82,6 @@ def test_triple_dots():
     return
 
 
-def test_ldots_cdots():
-    input_string = "Some $1,\cdots,n$ or $1,\ldots,n$."
-    out = tidytex.clean(input_string)
-    assert out == "Some $1,\dots,n$ or $1,\dots,n$."
-    return
-
-
 def test_punctuation_outside_math():
     input_string = "$a+b=c.$"
     out = tidytex.clean(input_string)
@@ -156,4 +149,11 @@ def test_def_newcommand():
     input_string = "\\def\\e{\\text{r}}"
     out = tidytex.clean(input_string)
     assert out == "\\newcommand{\\e}{\\text{r}}"
+    return
+
+
+def test_linebreak_around_begin_end():
+    input_string = "A\\begin{equation}a+b=c\\end{equation} B \n\\begin{a}\nd+e+f\n\\end{a}\nB"
+    out = tidytex.clean(input_string)
+    assert out == "A\n\\begin{equation}\na+b=c\n\\end{equation}\n B\n\\begin{a}\nd+e+f\n\\end{a}\nB"
     return

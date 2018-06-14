@@ -72,8 +72,6 @@ def _add_space_after_single_exponent(string):
 
 def _replace_dots(string):
     string = re.sub("\.\.\.", "\\dots", string)
-    string = re.sub("\\\\ldots", "\\\\dots", string)
-    string = re.sub("\\\\cdots", "\\\\dots", string)
     return string
 
 
@@ -232,6 +230,32 @@ def _replace_def_by_newcommand(string):
     return _substitute_string_ranges(string, ranges, replacements)
 
 
+def _add_linebreak_around_begin_end(string):
+    insert = []
+
+    p = re.compile(r"\\begin{[^}]+}")
+    for m in p.finditer(string):
+        k0 = m.start()
+        if string[k0 - 1] != "\n":
+            insert.append(k0)
+        k1 = m.end()
+        if string[k1] != "\n":
+            insert.append(k1)
+
+    p = re.compile(r"\\end{[^}]+}")
+    for m in p.finditer(string):
+        k0 = m.start()
+        if string[k0 - 1] != "\n":
+            insert.append(k0)
+        k1 = m.end()
+        if string[k1] != "\n":
+            insert.append(k1)
+
+    return _substitute_string_ranges(
+        string, [(i, i) for i in sorted(insert)], len(insert) * ["\n"]
+    )
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -253,4 +277,5 @@ def clean(string):
     out = _add_backslash_for_keywords(out)
     out = _add_curly_brackets_around_round_brackets_with_exponent(out)
     out = _replace_def_by_newcommand(out)
+    out = _add_linebreak_around_begin_end(out)
     return out
