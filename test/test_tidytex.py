@@ -164,3 +164,10 @@ def test_linebreak_around_begin_end():
     out = tidytex.clean(input_string)
     assert out == "A\n\\begin{equation}\na+b=c\n\\end{equation}\n B\n\\begin{a}\nd+e+f\n\\end{a}\nB"
     return
+
+
+def test_centerline():
+    input_string = "\\centerline{foobar}"
+    out = tidytex.clean(input_string)
+    assert out == "{\\centering foobar}"
+    return

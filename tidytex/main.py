@@ -259,6 +259,10 @@ def _add_linebreak_around_begin_end(string):
     )
 
 
+def _replace_centerline(string):
+    return re.sub(r"\\centerline{", r"{\\centering ", string)
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -281,4 +285,5 @@ def clean(string):
     out = _add_curly_brackets_around_round_brackets_with_exponent(out)
     out = _replace_def_by_newcommand(out)
     out = _add_linebreak_around_begin_end(out)
+    out = _replace_centerline(out)
     return out
