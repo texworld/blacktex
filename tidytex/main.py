@@ -70,7 +70,7 @@ def _replace_obsolete_text_mods(string):
 
 
 def _add_space_after_single_exponent(string):
-    string = re.sub("\\^([^{])([^ \\$])", "^\\1 \\2", string)
+    string = re.sub("\\^([^{])([^\s\\$])", "^\\1 \\2", string)
     return string
 
 
@@ -255,23 +255,15 @@ def _replace_def_by_newcommand(string):
 def _add_linebreak_around_begin_end(string):
     insert = []
 
-    p = re.compile(r"\\begin{[^}]+}")
-    for m in p.finditer(string):
-        k0 = m.start()
-        if string[k0 - 1] != "\n":
-            insert.append(k0)
-        k1 = m.end()
-        if string[k1] != "\n":
-            insert.append(k1)
-
-    p = re.compile(r"\\end{[^}]+}")
-    for m in p.finditer(string):
-        k0 = m.start()
-        if string[k0 - 1] != "\n":
-            insert.append(k0)
-        k1 = m.end()
-        if string[k1] != "\n":
-            insert.append(k1)
+    for m in [r"\\begin{[^}]+}", r"\\end{[^}]+}"]:
+        p = re.compile(m)
+        for m in p.finditer(string):
+            k = m.start()
+            if string[k - 1] != "\n":
+                insert.append(k)
+            k = m.end()
+            if string[k] != "\n":
+                insert.append(k)
 
     return _substitute_string_ranges(
         string, [(i, i) for i in sorted(insert)], len(insert) * ["\n"]
