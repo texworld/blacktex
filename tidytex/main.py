@@ -218,6 +218,20 @@ def _add_curly_brackets_around_round_brackets_with_exponent(string):
     return _substitute_string_ranges(string, [(i, i) for i in insert], replacements)
 
 
+def _replace_def_by_newcommand(string):
+    p = re.compile(r"\\def\\[A-Za-z]+")
+
+    ranges = []
+    replacements = []
+    for m in p.finditer(string):
+        ranges.append((m.start(), m.end()))
+        replacements.append(
+            "\\newcommand{{{}}}".format(string[m.start() + 4 : m.end()])
+        )
+
+    return _substitute_string_ranges(string, ranges, replacements)
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -238,4 +252,5 @@ def clean(string):
     out = _add_linebreak_after_double_backslash(out)
     out = _add_backslash_for_keywords(out)
     out = _add_curly_brackets_around_round_brackets_with_exponent(out)
+    out = _replace_def_by_newcommand(out)
     return out

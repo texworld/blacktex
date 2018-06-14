@@ -150,3 +150,10 @@ def test_curly_around_round_with_exponent():
     out = tidytex.clean(input_string)
     assert out == "${(a+b)}^n {\\left(a+b\\right)}^{n+1}$"
     return
+
+
+def test_def_newcommand():
+    input_string = "\\def\\e{\\text{r}}"
+    out = tidytex.clean(input_string)
+    assert out == "\\newcommand{\\e}{\\text{r}}"
+    return
