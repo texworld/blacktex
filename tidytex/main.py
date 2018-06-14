@@ -107,6 +107,12 @@ def _replace_double_nbsp(string):
     return string
 
 
+def _replace_nbsp_space(string):
+    string = re.sub("~ ", " ", string)
+    string = re.sub(" ~", " ", string)
+    return string
+
+
 def _substitute_string_ranges(string, ranges, replacements):
     if ranges:
         lst = [string[: ranges[0][0]]]
@@ -168,6 +174,20 @@ def _add_linebreak_after_double_backslash(string):
     )
 
 
+def _add_backslash_for_keywords(string):
+    insert = []
+    for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
+        p = re.compile(r"[^A-Za-z]{}[^A-Za-z]".format(keyword))
+        locations = [m.start() for m in p.finditer(string)]
+        for loc in locations:
+            if string[loc] != "\\":
+                insert.append(loc)
+
+    return _substitute_string_ranges(
+        string, [(i + 1, i + 1) for i in insert], len(insert) * ["\\"]
+    )
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -183,6 +203,8 @@ def clean(string):
     out = _remove_whitespace_before_punctuation(out)
     out = _add_nbsp_before_reference(out)
     out = _replace_double_nbsp(out)
+    out = _replace_nbsp_space(out)
     out = _replace_over(out)
     out = _add_linebreak_after_double_backslash(out)
+    out = _add_backslash_for_keywords(out)
     return out

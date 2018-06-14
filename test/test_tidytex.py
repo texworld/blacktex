@@ -129,3 +129,17 @@ def test_linebreak_after_double_backslash():
     out = tidytex.clean(input_string)
     assert out == "Some $2\\\\\n3 4\\\\\n6$."
     return
+
+
+def test_nbsp_space():
+    input_string = "Some ~thing."
+    out = tidytex.clean(input_string)
+    assert out == "Some thing."
+    return
+
+
+def test_keywords_without_backslash():
+    input_string = "maximum and logarithm $max_x log(x)$"
+    out = tidytex.clean(input_string)
+    assert out == "maximum and logarithm $\\max_x \\log(x)$"
+    return
