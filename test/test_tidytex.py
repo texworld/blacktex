@@ -76,6 +76,10 @@ def test_exponent_space():
     input_string = "$1/n^3$."
     out = tidytex.clean(input_string)
     assert out == "$1/n^3$."
+
+    input_string = "n^\\alpha"
+    out = tidytex.clean(input_string)
+    assert out == "n^\\alpha"
     return
 
 
