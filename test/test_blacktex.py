@@ -208,3 +208,10 @@ def test_eqnarray_align():
     out = blacktex.clean(input_string)
     assert out == "A\n\\begin{align*}\na+b\n\\end{align*}\nF"
     return
+
+
+def test_env_label():
+    input_string = "A\n\\begin{lemma}\n\\label{lvalpp}"
+    out = blacktex.clean(input_string)
+    assert out == "A\n\\begin{lemma}\\label{lvalpp}\n"
+    return

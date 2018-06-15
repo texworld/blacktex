@@ -283,6 +283,10 @@ def _replace_eqnarray(string):
     return re.sub("eqnarray", "align", string)
 
 
+def _put_label_on_same_line_as_environment(string):
+    return re.sub(r"(\\begin{.*?})\s+(\\label{.*?})", r"\1\2\n", string)
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -307,4 +311,5 @@ def clean(string):
     out = _add_linebreak_around_begin_end(out)
     out = _replace_centerline(out)
     out = _replace_eqnarray(out)
+    out = _put_label_on_same_line_as_environment(out)
     return out
