@@ -55,9 +55,7 @@ def _replace_dollar_dollar(string):
     replacements = []
     while k < len(locations):
         ranges.append((locations[k], locations[k + 1] + 2))
-        replacements.append(
-            "\\[" + string[locations[k] + 2 : locations[k + 1]] + "\\]"
-        )
+        replacements.append("\\[" + string[locations[k] + 2 : locations[k + 1]] + "\\]")
         k += 2
 
     return _substitute_string_ranges(string, ranges, replacements)
@@ -258,21 +256,18 @@ def _replace_def_by_newcommand(string):
 
 
 def _add_linebreak_around_begin_end(string):
-    insert = []
+    string = re.sub(r"([^\n ]) *(\\begin{.*?})", r"\1\n\2", string)
+    string = re.sub(r"(\\begin{.*?}) *([^\n ])", r"\1\n\2", string)
 
-    for m in [r"\\begin{[^}]+}", r"\\end{[^}]+}", r"\\\[", r"\\\]"]:
-        p = re.compile(m)
-        for m in p.finditer(string):
-            k = m.start()
-            if string[k - 1] != "\n":
-                insert.append(k)
-            k = m.end()
-            if string[k] != "\n":
-                insert.append(k)
+    string = re.sub(r"([^\n ]) *(\\end{.*?})", r"\1\n\2", string)
+    string = re.sub(r"(\\end{.*?}) *([^\n ])", r"\1\n\2", string)
 
-    return _substitute_string_ranges(
-        string, [(i, i) for i in sorted(insert)], len(insert) * ["\n"]
-    )
+    string = re.sub(r"([^\n ]) *(\\\[)", r"\1\n\2", string)
+    string = re.sub(r"(\\\[) *([^\n ])", r"\1\n\2", string)
+
+    string = re.sub(r"([^\n ]) *(\\\])", r"\1\n\2", string)
+    string = re.sub(r"(\\\]) *([^\n ])", r"\1\n\2", string)
+    return string
 
 
 def _replace_centerline(string):

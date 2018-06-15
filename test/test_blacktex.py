@@ -27,16 +27,16 @@ def test_multiple_comment_lines():
 
 
 def test_trailing_whitespace():
-    input_string = """lorem    \n sit amet"""
+    input_string = "lorem    \n sit amet"
     out = blacktex.clean(input_string)
-    assert out == """lorem\n sit amet"""
+    assert out == "lorem\n sit amet"
     return
 
 
 def test_obsolete_text_mod():
-    input_string = """lorem {\\it ipsum dolor} sit amet"""
+    input_string = "lorem {\\it ipsum dolor} sit amet"
     out = blacktex.clean(input_string)
-    assert out == """lorem \\textit{ipsum dolor} sit amet"""
+    assert out == "lorem \\textit{ipsum dolor} sit amet"
     return
 
 
@@ -64,23 +64,25 @@ def test_spaces_with_brackets():
 
 
 def test_multiple_newlines():
-    input_string = """lorem  \n\n\n\n ipsum dolor sit  amet"""
+    input_string = "lorem  \n\n\n\n ipsum dolor sit  amet"
     out = blacktex.clean(input_string)
-    assert out == """lorem\n\n\n ipsum dolor sit amet"""
+    assert out == "lorem\n\n\n ipsum dolor sit amet"
     return
 
 
 def test_dollar_dollar():
-    input_string = """a $$a + b = c$$ b"""
+    input_string = "a $$a + b = c$$ b"
     out = blacktex.clean(input_string)
-    assert out == """a \n\\[\na + b = c\n\\]\n b"""
+    print(repr(input_string))
+    print(repr(out))
+    assert out == "a\n\\[\na + b = c\n\\]\nb"
     return
 
 
 def test_whitespace_after_curly():
-    input_string = """\\textit{ \nlorem  \n\n\n ipsum dolor sit  amet}"""
+    input_string = "\\textit{ \nlorem  \n\n\n ipsum dolor sit  amet}"
     out = blacktex.clean(input_string)
-    assert out == """\\textit{lorem\n\n\n ipsum dolor sit amet}"""
+    assert out == "\\textit{lorem\n\n\n ipsum dolor sit amet}"
     return
 
 
@@ -189,10 +191,13 @@ def test_linebreak_around_begin_end():
         "A\\begin{equation}a+b=c\\end{equation} B \n\\begin{a}\nd+e+f\n\\end{a}\nB"
     )
     out = blacktex.clean(input_string)
-    assert (
-        out
-        == "A\n\\begin{equation}\na+b=c\n\\end{equation}\n B\n\\begin{a}\nd+e+f\n\\end{a}\nB"
-    )
+    ref = "A\n\\begin{equation}\na+b=c\n\\end{equation}\nB\n\\begin{a}\nd+e+f\n\\end{a}\nB"
+    assert out == ref
+
+    # indentation is okay
+    input_string = "A\n  \\begin{equation}\n  a+b=c\n  \\end{equation}"
+    out = blacktex.clean(input_string)
+    assert out == "A\n  \\begin{equation}\n  a+b=c\n  \\end{equation}"
     return
 
 
