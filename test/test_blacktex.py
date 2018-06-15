@@ -41,9 +41,16 @@ def test_obsolete_text_mod():
 
 
 def test_multiple_spaces():
-    input_string = """lorem   ipsum dolor sit  amet"""
+    input_string = "lorem   ipsum dolor sit  amet"
     out = blacktex.clean(input_string)
-    assert out == """lorem ipsum dolor sit amet"""
+    assert out == "lorem ipsum dolor sit amet"
+
+    # It's allowed as indentation at the beginning of lines
+    input_string = "a\n    b\nc"
+    out = blacktex.clean(input_string)
+    print(repr(input_string))
+    print(repr(out))
+    assert out == "a\n    b\nc"
     return
 
 

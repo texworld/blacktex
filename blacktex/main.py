@@ -24,7 +24,9 @@ def _remove_trailing_whitespace(string):
 
 
 def _remove_multiple_spaces(string):
-    return re.sub(" +", " ", string)
+    """Replaces multiply spaces by one, except after a newline.
+    """
+    return re.sub("([^\n ])  +", r"\1 ", string)
 
 
 def _remove_multiple_newlines(string):
