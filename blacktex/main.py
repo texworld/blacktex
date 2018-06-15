@@ -8,7 +8,8 @@ def _remove_comments(string):
     comment_lines = []
     lines = string.split("\n")
     for k, line in enumerate(lines):
-        if len(line) > 0 and line.strip()[0] == "%":
+        sline = line.strip()
+        if len(sline) > 0 and sline[0] == "%":
             comment_lines.append(k)
     string = "\n".join([lines[k] for k in range(len(lines)) if k not in comment_lines])
 
