@@ -6,12 +6,12 @@ from __future__ import print_function
 import argparse
 import sys
 
-import tidytex
+import blacktex
 
 
 def _main():
     args = _parse_options()
-    out = tidytex.clean(args.infile.read())
+    out = blacktex.clean(args.infile.read())
     print(out, end="")
     return
 
@@ -35,8 +35,8 @@ def _parse_options():
         help="output LaTeX file (default: stdout)",
     )
 
-    version_text = "tidytex {}, Python {}.{}.{}".format(
-        tidytex.__version__,
+    version_text = "blacktex {}, Python {}.{}.{}".format(
+        blacktex.__version__,
         sys.version_info.major,
         sys.version_info.minor,
         sys.version_info.micro,

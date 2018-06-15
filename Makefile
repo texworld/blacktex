@@ -1,4 +1,4 @@
-VERSION=$(shell python3 -c "import tidytex; print(tidytex.__version__)")
+VERSION=$(shell python3 -c "import blacktex; print(blacktex.__version__)")
 
 default:
 	@echo "\"make publish\"?"
@@ -21,8 +21,8 @@ publish: tag upload
 
 clean:
 	@find . | grep -E "(__pycache__|\.pyc|\.pyo$\)" | xargs rm -rf
-	@rm -rf *.egg-info/ build/ dist/ MANIFEST
+	@rm -rf *.egg-info/ build/ dist/ MANIFEST .pytest_cache/
 
 lint:
-	black --check setup.py tidytex/ test/*.py tools/tidytex
-	flake8 setup.py tidytex/ test/*.py tools/tidytex
+	black --check setup.py blacktex/ test/*.py tools/blacktex
+	flake8 setup.py blacktex/ test/*.py tools/blacktex
