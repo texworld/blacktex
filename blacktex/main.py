@@ -287,6 +287,10 @@ def _put_label_on_same_line_as_environment(string):
     return re.sub(r"(\\begin{.*?})\s+(\\label{.*?})", r"\1\2\n", string)
 
 
+def _replace_colon_equal_by_coloneqq(string):
+    return re.sub(r":=", r"\\coloneqq ", string)
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -312,4 +316,5 @@ def clean(string):
     out = _replace_centerline(out)
     out = _replace_eqnarray(out)
     out = _put_label_on_same_line_as_environment(out)
+    out = _replace_colon_equal_by_coloneqq(out)
     return out

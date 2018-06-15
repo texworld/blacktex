@@ -215,3 +215,10 @@ def test_env_label():
     out = blacktex.clean(input_string)
     assert out == "A\n\\begin{lemma}\\label{lvalpp}\n"
     return
+
+
+def test_coloneqq():
+    input_string = "A:=b+c"
+    out = blacktex.clean(input_string)
+    assert out == "A\\coloneqq b+c"
+    return
