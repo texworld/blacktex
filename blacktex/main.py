@@ -24,7 +24,7 @@ def _remove_trailing_whitespace(string):
 
 
 def _remove_multiple_spaces(string):
-    """Replaces multiply spaces by one, except after a newline.
+    """Replaces multiple spaces by one, except after a newline.
     """
     return re.sub("([^\n ])  +", r"\1 ", string)
 
@@ -34,8 +34,12 @@ def _remove_multiple_newlines(string):
     return string
 
 
-def _remove_whitespace_after_curly(string):
+def _remove_whitespace_around_brackets(string):
     string = re.sub("{\s+", "{", string)
+    string = re.sub("\s+}", "}", string)
+    string = re.sub("\(\s+", "(", string)
+    string = re.sub("\s+\)", ")", string)
+    string = re.sub("\s+\\\\right\)", "\\\\right)", string)
     return string
 
 
@@ -287,7 +291,7 @@ def clean(string):
     out = _remove_multiple_spaces(out)
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
-    out = _remove_whitespace_after_curly(out)
+    out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_exponent(out)
     out = _replace_dots(out)
     out = _replace_punctuation_outside_math(out)

@@ -48,9 +48,18 @@ def test_multiple_spaces():
     # It's allowed as indentation at the beginning of lines
     input_string = "a\n    b\nc"
     out = blacktex.clean(input_string)
-    print(repr(input_string))
-    print(repr(out))
     assert out == "a\n    b\nc"
+
+    input_string = "\\[\n  S(T)\leq S(P_n).\n\\]\n"
+    out = blacktex.clean(input_string)
+    assert out == "\\[\n  S(T)\leq S(P_n).\n\\]\n"
+    return
+
+
+def test_spaces_with_brackets():
+    input_string = "( 1+2 ) { 3+4 } \\left( 5+6 \\right)"
+    out = blacktex.clean(input_string)
+    assert out == "(1+2) {3+4} \\left(5+6\\right)"
     return
 
 
