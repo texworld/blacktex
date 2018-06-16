@@ -223,7 +223,7 @@ def test_eqnarray_align():
 def test_env_label():
     input_string = "A\n\\begin{lemma}\n\\label{lvalpp}"
     out = blacktex.clean(input_string)
-    assert out == "A\n\\begin{lemma}\\label{lvalpp}\n"
+    assert out == "A\n\\begin{lemma}\\label{lvalpp}"
     return
 
 
@@ -242,7 +242,28 @@ def test_tabular_column_spec():
 
 
 def test_env_option_spec():
-    input_string = "\\begin{table} \n [h!]"
+    input_string = "\\begin{table} \n [h!]G"
     out = blacktex.clean(input_string)
-    assert out == "\\begin{table}[h!]\n"
+    assert out == "\\begin{table}[h!]\nG"
+
+    input_string = "\\begin{table}   [h!]G"
+    out = blacktex.clean(input_string)
+    assert out == "\\begin{table}[h!]\nG"
+
+    input_string = "\\begin{table}   [h!]\nG"
+    out = blacktex.clean(input_string)
+    assert out == "\\begin{table}[h!]\nG"
+
+    input_string = "\\begin{table} \n [h!]G"
+    out = blacktex.clean(input_string)
+    assert out == "\\begin{table}[h!]\nG"
+
+    input_string = "\\begin{table} \n [h!]\\label{foo}"
+    out = blacktex.clean(input_string)
+    assert out == "\\begin{table}[h!]\\label{foo}"
+
+    input_string = "\\begin{table} \n [h!]\\label{foo}\nG"
+    out = blacktex.clean(input_string)
+    print(repr(out))
+    assert out == "\\begin{table}[h!]\\label{foo}\nG"
     return

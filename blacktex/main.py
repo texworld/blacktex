@@ -279,11 +279,13 @@ def _replace_eqnarray(string):
 
 
 def _put_spec_on_same_line_as_environment(string):
-    return re.sub(r"(\\begin{.*?})\s*(\[.*?\])", r"\1\2\n", string)
+    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])\n", r"\1\2", string)
+    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])([^\n])", r"\1\2\n\3", string)
+    return string
 
 
 def _put_label_on_same_line_as_environment(string):
-    return re.sub(r"(\\begin{.*?})\s+(\\label{.*?})", r"\1\2\n", string)
+    return re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
 
 
 def _replace_colon_equal_by_coloneqq(string):
