@@ -236,5 +236,5 @@ def test_coloneqq():
 def test_tabular_column_spec():
     input_string = "\\begin{tabular} \n {ccc}"
     out = blacktex.clean(input_string)
-    assert out == "\\begin{tabular}{ccc}"
+    assert out == "\\begin{tabular}{ccc}\n"
     return
