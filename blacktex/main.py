@@ -286,6 +286,11 @@ def _replace_colon_equal_by_coloneqq(string):
     return re.sub(r":=", r"\\coloneqq ", string)
 
 
+def _remove_space_before_tabular_column_specification(string):
+    string = re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2", string)
+    return string
+
+
 def clean(string):
     out = string
     out = _remove_comments(out)
@@ -312,4 +317,5 @@ def clean(string):
     out = _replace_eqnarray(out)
     out = _put_label_on_same_line_as_environment(out)
     out = _replace_colon_equal_by_coloneqq(out)
+    out = _remove_space_before_tabular_column_specification(out)
     return out

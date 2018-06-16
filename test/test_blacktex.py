@@ -231,3 +231,10 @@ def test_coloneqq():
     out = blacktex.clean(input_string)
     assert out == "A\\coloneqq b+c"
     return
+
+
+def test_tabular_column_spec():
+    input_string = "\\begin{tabular} \n {ccc}"
+    out = blacktex.clean(input_string)
+    assert out == "\\begin{tabular}{ccc}"
+    return
