@@ -9,13 +9,14 @@ def test_comments():
     input_string = "lorem  %some comment  \n %sit amet"
     out = blacktex.clean(input_string)
     assert out == "lorem"
-    return
 
-
-def test_comment_lines():
     input_string = "% lorem some comment  \n sit amet"
     out = blacktex.clean(input_string)
     assert out == " sit amet"
+
+    input_string = "A % lorem some comment  \n sit amet"
+    out = blacktex.clean(input_string)
+    assert out == "A\n sit amet"
     return
 
 
