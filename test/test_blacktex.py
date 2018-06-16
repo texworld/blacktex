@@ -74,8 +74,6 @@ def test_multiple_newlines():
 def test_dollar_dollar():
     input_string = "a $$a + b = c$$ b"
     out = blacktex.clean(input_string)
-    print(repr(input_string))
-    print(repr(out))
     assert out == "a\n\\[\na + b = c\n\\]\nb"
     return
 
@@ -114,9 +112,9 @@ def test_triple_dots():
 
 
 def test_punctuation_outside_math():
-    input_string = "$a+b=c.$"
+    input_string = "$a+b.$"
     out = blacktex.clean(input_string)
-    assert out == "$a+b=c$."
+    assert out == "$a+b$."
     return
 
 
@@ -193,16 +191,16 @@ def test_def_newcommand():
 
 def test_linebreak_around_begin_end():
     input_string = (
-        "A\\begin{equation}a+b=c\\end{equation} B \n\\begin{a}\nd+e+f\n\\end{a}\nB"
+        "A\\begin{equation}a+b\\end{equation} B \n\\begin{a}\nd+e\n\\end{a}\nB"
     )
     out = blacktex.clean(input_string)
-    ref = "A\n\\begin{equation}\na+b=c\n\\end{equation}\nB\n\\begin{a}\nd+e+f\n\\end{a}\nB"
+    ref = "A\n\\begin{equation}\na+b\n\\end{equation}\nB\n\\begin{a}\nd+e\n\\end{a}\nB"
     assert out == ref
 
     # indentation is okay
-    input_string = "A\n  \\begin{equation}\n  a+b=c\n  \\end{equation}"
+    input_string = "A\n  \\begin{equation}\n  a+b\n  \\end{equation}"
     out = blacktex.clean(input_string)
-    assert out == "A\n  \\begin{equation}\n  a+b=c\n  \\end{equation}"
+    assert out == "A\n  \\begin{equation}\n  a+b\n  \\end{equation}"
     return
 
 
@@ -264,6 +262,12 @@ def test_env_option_spec():
 
     input_string = "\\begin{table} \n [h!]\\label{foo}\nG"
     out = blacktex.clean(input_string)
-    print(repr(out))
     assert out == "\\begin{table}[h!]\\label{foo}\nG"
+    return
+
+
+def test_space_around_operators():
+    input_string = "a+b=c"
+    out = blacktex.clean(input_string)
+    assert out == "a+b = c"
     return
