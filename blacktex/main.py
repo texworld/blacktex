@@ -73,7 +73,7 @@ def _replace_obsolete_text_mods(string):
 
 
 def _add_space_after_single_exponent(string):
-    string = re.sub("\\^([^{\\\\])([^\s\\$])", r"^\1 \2", string)
+    string = re.sub("\\^([^{\\\\])([^\s\\$}])", r"^\1 \2", string)
     return string
 
 

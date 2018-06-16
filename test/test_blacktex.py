@@ -95,6 +95,10 @@ def test_exponent_space():
     out = blacktex.clean(input_string)
     assert out == "$1/n^3$."
 
+    input_string = "${n^3}$."
+    out = blacktex.clean(input_string)
+    assert out == "${n^3}$."
+
     input_string = "n^\\alpha"
     out = blacktex.clean(input_string)
     assert out == "n^\\alpha"
