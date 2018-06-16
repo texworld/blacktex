@@ -278,6 +278,10 @@ def _replace_eqnarray(string):
     return re.sub("eqnarray", "align", string)
 
 
+def _put_spec_on_same_line_as_environment(string):
+    return re.sub(r"(\\begin{.*?})\s*(\[.*?\])", r"\1\2\n", string)
+
+
 def _put_label_on_same_line_as_environment(string):
     return re.sub(r"(\\begin{.*?})\s+(\\label{.*?})", r"\1\2\n", string)
 
@@ -287,8 +291,7 @@ def _replace_colon_equal_by_coloneqq(string):
 
 
 def _remove_space_before_tabular_column_specification(string):
-    string = re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2\n", string)
-    return string
+    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2\n", string)
 
 
 def clean(string):
@@ -315,6 +318,7 @@ def clean(string):
     out = _add_linebreak_around_begin_end(out)
     out = _replace_centerline(out)
     out = _replace_eqnarray(out)
+    out = _put_spec_on_same_line_as_environment(out)
     out = _put_label_on_same_line_as_environment(out)
     out = _replace_colon_equal_by_coloneqq(out)
     out = _remove_space_before_tabular_column_specification(out)

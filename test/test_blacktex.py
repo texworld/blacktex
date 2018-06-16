@@ -239,3 +239,10 @@ def test_tabular_column_spec():
     out = blacktex.clean(input_string)
     assert out == "\\begin{tabular}{ccc}\n"
     return
+
+
+def test_env_option_spec():
+    input_string = "\\begin{table} \n [h!]"
+    out = blacktex.clean(input_string)
+    assert out == "\\begin{table}[h!]\n"
+    return
