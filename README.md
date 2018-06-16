@@ -8,29 +8,6 @@ Cleans up your LaTeX files.
 [![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg)](https://pypi.python.org/pypi/blacktex)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?logo=github&label=Stars)](https://github.com/nschloe/blacktex)
 
-blacktex converts your input file
-```
-| A | 1.34|-214.1
-|CCCC | 55.534|   1131.1|
-```
-into
-```
-| A    |  1.34  | -214.1 |
-| CCCC | 55.534 | 1131.1 |
-```
-Column widths are unified across the table, decimal dots are aligned, and
-blacktex tries to be smart about column separators. Works for CSV, LaTeX,
-Markdown etc.
-
-### Usage from vim
-
-Simply mark the table, and type
-```
-:'<,'>:!blacktex
-```
-
-![](https://nschloe.github.io/blacktex/tty-capture.gif)
-
 ### Installation
 
 blacktex is [available from the Python Package Index](https://pypi.python.org/pypi/blacktex/), so with
