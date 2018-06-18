@@ -8,6 +8,26 @@ Cleans up your LaTeX files.
 [![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg)](https://pypi.python.org/pypi/blacktex)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?logo=github&label=Stars)](https://github.com/nschloe/blacktex)
 
+blacktex is a little tool, helping with the article editing for LaTeX. It removes all
+comments from a given file and corrects some common anti-patterns. For example, with
+```
+blacktex in.tex out.tex
+```
+the input file
+```
+Because   of $$a+b=c$$ ({\it Pythogoras}),
+and $y=2^ng$ with $n=1,...,10$, we have ${\\Gamma \\over 2}=8.$
+```
+is converted to
+```
+Because of
+\[
+a+b = c
+\]
+(\\textit{Pythogoras}),
+and $y = 2^n g$ with $n = 1,\\dots,10$, we have $\\frac{\Gamma}{2} = 8$.
+```
+
 ### Installation
 
 blacktex is [available from the Python Package Index](https://pypi.python.org/pypi/blacktex/), so with

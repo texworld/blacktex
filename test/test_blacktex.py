@@ -7,7 +7,7 @@ import blacktex
 
 def test_readme():
     input_string = (
-        "Because   of $$a^2+b^2=c^2$$ ({\it Pythogoras}),\n"
+        "Because   of $$a+b=c$$ ({\it Pythogoras}),\n"
         "and $y=2^ng$ with $n=1,...,10$, we have ${\\Gamma \\over 2}=8.$"
     )
 
@@ -15,7 +15,7 @@ def test_readme():
     assert out == (
         "Because of\n"
         "\[\n"
-        "a^2 +b^2 = c^2\n"
+        "a+b = c\n"
         "\]\n"
         "(\\textit{Pythogoras}),\n"
         "and $y = 2^n g$ with $n = 1,\\dots,10$, we have $\\frac{\Gamma}{2} = 8$."
