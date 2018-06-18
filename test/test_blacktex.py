@@ -8,6 +8,7 @@ import blacktex
 def test_readme():
     input_string = (
         "Because   of $$a+b=c$$ ({\\it Pythogoras}),\n"
+        "% @johnny remember to insert name,\n"
         "and $y=2^ng$ with $n=1,...,10$, we have ${\\Gamma \\over 2}=8.$"
     )
 

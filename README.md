@@ -16,6 +16,7 @@ blacktex in.tex out.tex
 the input file
 ```latex
 Because   of $$a+b=c$$ ({\it Pythogoras}),
+% @johnny remember to insert name
 and $y=2^ng$ with $n=1,...,10$, we have ${\Gamma \over 2}=8.$
 ```
 is converted to
