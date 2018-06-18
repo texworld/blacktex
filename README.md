@@ -14,18 +14,18 @@ comments from a given file and corrects some common anti-patterns. For example, 
 blacktex in.tex out.tex
 ```
 the input file
-```
+```latex
 Because   of $$a+b=c$$ ({\it Pythogoras}),
-and $y=2^ng$ with $n=1,...,10$, we have ${\\Gamma \\over 2}=8.$
+and $y=2^ng$ with $n=1,...,10$, we have ${\Gamma \over 2}=8.$
 ```
 is converted to
-```
+```latex
 Because of
 \[
 a+b = c
 \]
-(\\textit{Pythogoras}),
-and $y = 2^n g$ with $n = 1,\\dots,10$, we have $\\frac{\Gamma}{2} = 8$.
+(\textit{Pythogoras}),
+and $y = 2^n g$ with $n = 1,\dots,10$, we have $\frac{\Gamma}{2} = 8$.
 ```
 
 ### Installation
