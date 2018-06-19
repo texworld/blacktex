@@ -9,14 +9,16 @@ import sys
 import blacktex
 
 
-def main():
-    args = _parse_options()
+def main(argv=None):
+    parser = _get_parser()
+    args = parser.parse_args(argv)
+
     out = blacktex.clean(args.infile.read())
-    print(out, end="")
+    args.outfile.write(out)
     return
 
 
-def _parse_options():
+def _get_parser():
     parser = argparse.ArgumentParser(description="Clean up LaTeX files.")
 
     parser.add_argument(
@@ -43,4 +45,4 @@ def _parse_options():
     )
     parser.add_argument("--version", "-v", action="version", version=version_text)
 
-    return parser.parse_args()
+    return parser
