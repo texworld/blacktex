@@ -8,6 +8,7 @@ upload: setup.py
 	# Make sure we're on the master branch
 	@if [ "$(shell git rev-parse --abbrev-ref HEAD)" != "master" ]; then exit 1; fi
 	rm -f dist/*
+	python3 setup.py sdist
 	python3 setup.py bdist_wheel --universal
 	twine upload dist/*
 
@@ -24,5 +25,5 @@ clean:
 	@rm -rf *.egg-info/ build/ dist/ MANIFEST .pytest_cache/
 
 lint:
-	black --check setup.py blacktex/ test/*.py tools/blacktex
-	flake8 setup.py blacktex/ test/*.py tools/blacktex
+	black --check setup.py blacktex/ test/*.py
+	flake8 setup.py blacktex/ test/*.py

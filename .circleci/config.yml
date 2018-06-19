@@ -12,8 +12,8 @@ jobs:
       - checkout
       - run: pip3 install .
       # format and lint
-      - run: LC_ALL=C.UTF-8 black --check setup.py blacktex/ test/*.py tools/blacktex
-      - run: flake8 setup.py blacktex/ test/*.py tools/blacktex
+      - run: LC_ALL=C.UTF-8 black --check setup.py blacktex/ test/*.py
+      - run: flake8 setup.py blacktex/ test/*.py
       # The tests
       - run: cd test/ && MPLBACKEND=Agg pytest --cov blacktex
       # submit to codecov

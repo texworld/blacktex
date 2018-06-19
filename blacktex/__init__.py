@@ -10,6 +10,7 @@ from .__about__ import (
     __website__,
 )
 
+from . import cli
 from .main import clean
 
 __all__ = [
@@ -18,13 +19,14 @@ __all__ = [
     "__author__",
     "__author_email__",
     "__website__",
+    "cli",
     "clean",
 ]
 
-# try:
-#     import pipdate
-# except ImportError:
-#     pass
-# else:
-#     if pipdate.needs_checking(__name__):
-#         print(pipdate.check(__name__, __version__), end="")
+try:
+    import pipdate
+except ImportError:
+    pass
+else:
+    if pipdate.needs_checking(__name__):
+        print(pipdate.check(__name__, __version__), end="")
