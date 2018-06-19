@@ -12,8 +12,6 @@ def test_cli():
 
     outfile = tempfile.NamedTemporaryFile().name
 
-    print(infile, outfile)
-
     blacktex.cli.main([infile, outfile])
 
     with open(outfile, 'r') as f:
