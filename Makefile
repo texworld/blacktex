@@ -25,5 +25,5 @@ clean:
 	@rm -rf *.egg-info/ build/ dist/ MANIFEST .pytest_cache/
 
 lint:
-	black --check setup.py blacktex/ test/*.py tools/blacktex
-	flake8 setup.py blacktex/ test/*.py tools/blacktex
+	black --check setup.py blacktex/ test/*.py
+	flake8 setup.py blacktex/ test/*.py

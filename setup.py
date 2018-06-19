@@ -22,7 +22,7 @@ setup(
     url="https://github.com/nschloe/blacktex",
     author=about["__author__"],
     author_email=about["__author_email__"],
-    install_requires=["pipdate"],
+    install_requires=["pipdate >=0.3.0, <0.4.0"],
     description="Cleans up your LaTeX files",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
@@ -40,4 +40,5 @@ setup(
         "Topic :: Text Processing :: Markup :: LaTeX",
         "Topic :: Utilities",
     ],
+    entry_points={"console_scripts": ["blacktex = blacktex.cli:main"]},
 )

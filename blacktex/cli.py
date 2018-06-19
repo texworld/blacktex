@@ -9,7 +9,7 @@ import sys
 import blacktex
 
 
-def _main():
+def main():
     args = _parse_options()
     out = blacktex.clean(args.infile.read())
     print(out, end="")
@@ -44,7 +44,3 @@ def _parse_options():
     parser.add_argument("--version", "-v", action="version", version=version_text)
 
     return parser.parse_args()
-
-
-if __name__ == "__main__":
-    _main()
