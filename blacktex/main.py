@@ -78,7 +78,7 @@ def _add_space_after_single_exponent(string):
 
 
 def _replace_dots(string):
-    string = re.sub("\.\.\.", "\\dots", string)
+    string = re.sub("\.\.\.", "\\\\dots", string)
     return string
 
 
@@ -108,7 +108,7 @@ def _add_nbsp_before_reference(string):
 
 
 def _replace_double_nbsp(string):
-    string = re.sub("~~", "\\quad ", string)
+    string = re.sub("~~", "\\\\quad ", string)
     return string
 
 

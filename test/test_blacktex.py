@@ -70,9 +70,9 @@ def test_multiple_spaces():
     out = blacktex.clean(input_string)
     assert out == "a\n    b\nc"
 
-    input_string = "\\[\n  S(T)\leq S(P_n).\n\\]\n"
+    input_string = "\\[\n  S(T)\\leq S(P_n).\n\\]\n"
     out = blacktex.clean(input_string)
-    assert out == "\\[\n  S(T)\leq S(P_n).\n\\]\n"
+    assert out == "\\[\n  S(T)\\leq S(P_n).\n\\]\n"
     return
 
 
@@ -130,7 +130,7 @@ def test_exponent_space():
 def test_triple_dots():
     input_string = "a,...,b"
     out = blacktex.clean(input_string)
-    assert out == "a,\dots,b"
+    assert out == "a,\\dots,b"
     return
 
 
@@ -158,7 +158,7 @@ def test_nbsp_before_ref():
 def test_double_nbsp():
     input_string = "Some~~text."
     out = blacktex.clean(input_string)
-    assert out == "Some\quad text."
+    assert out == "Some\\quad text."
     return
 
 
