@@ -259,6 +259,10 @@ def test_coloneqq():
     input_string = "A:=b+c"
     out = blacktex.clean(input_string)
     assert out == "A\\coloneqq b+c"
+
+    input_string = "A := b+c"
+    out = blacktex.clean(input_string)
+    assert out == "A \\coloneqq b+c"
     return
 
 

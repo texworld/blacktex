@@ -305,9 +305,6 @@ def _add_spaces_around_equality_sign(string):
 def clean(string):
     out = string
     out = _remove_comments(out)
-    out = _remove_trailing_whitespace(out)
-    out = _remove_multiple_newlines(out)
-    out = _remove_multiple_spaces(out)
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
@@ -331,4 +328,7 @@ def clean(string):
     out = _replace_colon_equal_by_coloneqq(out)
     out = _remove_space_before_tabular_column_specification(out)
     out = _add_spaces_around_equality_sign(out)
+    out = _remove_trailing_whitespace(out)
+    out = _remove_multiple_newlines(out)
+    out = _remove_multiple_spaces(out)
     return out
