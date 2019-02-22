@@ -299,7 +299,7 @@ def _replace_colon_equal_by_coloneqq(string):
 
 
 def _remove_space_before_tabular_column_specification(string):
-    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2\n", string)
+    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2", string)
 
 
 def _add_spaces_around_equality_sign(string):
