@@ -69,6 +69,7 @@ def _replace_obsolete_text_mods(string):
     string = string.replace("{\\sf ", "\\textsf{")
     string = string.replace("{\\sl ", "\\textsl{")
     string = string.replace("{\\tt ", "\\texttt{")
+    string = string.replace("{\\em ", "\\emph{")
     return string
 
 

@@ -24,6 +24,13 @@ def test_readme():
     return
 
 
+def test_text_mods():
+    input_string = "{\\em it's me!}"
+    out = blacktex.clean(input_string)
+    assert out == "\\emph{it's me!}"
+    return
+
+
 def test_comments():
     input_string = "lorem  %some comment  \n %sit amet"
     out = blacktex.clean(input_string)
