@@ -35,16 +35,16 @@ def _remove_multiple_newlines(string):
 
 
 def _remove_whitespace_around_brackets(string):
-    string = re.sub("{\s+", "{", string)
-    string = re.sub("\s+}", "}", string)
-    string = re.sub("\(\s+", "(", string)
-    string = re.sub("\s+\)", ")", string)
-    string = re.sub("\s+\\\\right\)", "\\\\right)", string)
+    string = re.sub("{\\s+", "{", string)
+    string = re.sub("\\s+}", "}", string)
+    string = re.sub("\\(\\s+", "(", string)
+    string = re.sub("\\s+\\)", ")", string)
+    string = re.sub("\\s+\\\\right\\)", "\\\\right)", string)
     return string
 
 
 def _replace_dollar_dollar(string):
-    """Replace $$...$$ by \[...\].
+    """Replace $$...$$ by \\[...\\].
     """
     p = re.compile("\\$\\$")
     locations = [m.start() for m in p.finditer(string)]
@@ -73,12 +73,12 @@ def _replace_obsolete_text_mods(string):
 
 
 def _add_space_after_single_exponent(string):
-    string = re.sub("\\^([^{\\\\])([^\s\\$})])", r"^\1 \2", string)
+    string = re.sub("\\^([^{\\\\])([^\\s\\$})])", r"^\1 \2", string)
     return string
 
 
 def _replace_dots(string):
-    string = re.sub("\.\.\.", "\\\\dots", string)
+    string = re.sub("\\.\\.\\.", "\\\\dots", string)
     return string
 
 
@@ -87,23 +87,23 @@ def _replace_punctuation_outside_math(string):
     string = re.sub(",\\$", "$,", string)
     string = re.sub(";\\$", "$;", string)
     string = re.sub("!\\$", "$!", string)
-    string = re.sub("\?\\$", "$?", string)
+    string = re.sub("\\?\\$", "$?", string)
     return string
 
 
 def _remove_whitespace_before_punctuation(string):
-    string = re.sub("\s+\.", ".", string)
-    string = re.sub("\s+,", ",", string)
-    string = re.sub("\s+;", ";", string)
-    string = re.sub("\s+!", "!", string)
-    string = re.sub("\s+\?", "?", string)
+    string = re.sub("\\s+\\.", ".", string)
+    string = re.sub("\\s+,", ",", string)
+    string = re.sub("\\s+;", ";", string)
+    string = re.sub("\\s+!", "!", string)
+    string = re.sub("\\s+\\?", "?", string)
     return string
 
 
 def _add_nbsp_before_reference(string):
-    string = re.sub("\s+\\\\ref{", "~\\\\ref{", string)
-    string = re.sub("\s+\\\\eqref{", "~\\\\eqref{", string)
-    string = re.sub("\s+\\\\cite", "~\\\\cite", string)
+    string = re.sub("\\s+\\\\ref{", "~\\\\ref{", string)
+    string = re.sub("\\s+\\\\eqref{", "~\\\\eqref{", string)
+    string = re.sub("\\s+\\\\cite", "~\\\\cite", string)
     return string
 
 
@@ -129,7 +129,7 @@ def _substitute_string_ranges(string, ranges, replacements):
 
 
 def _replace_over(string):
-    p = re.compile("\\\\over")
+    p = re.compile("\\\\over[^a-z]")
     locations = [m.start() for m in p.finditer(string)]
 
     fracs = []

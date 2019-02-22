@@ -15,7 +15,7 @@ jobs:
       - run: LC_ALL=C.UTF-8 black --check setup.py blacktex/ test/*.py
       - run: flake8 setup.py blacktex/ test/*.py
       # The tests
-      - run: cd test/ && MPLBACKEND=Agg pytest --cov blacktex
+      - run: cd test/ && pytest -W error::UserWarning --cov blacktex
       # submit to codecov
       - run: apt-get install -y curl
       - run: bash <(curl -s https://codecov.io/bash)

@@ -177,6 +177,13 @@ def test_over_frac_warn():
     return
 
 
+def test_overline_warn():
+    input_string = "\\overline"
+    out = blacktex.clean(input_string)
+    assert out == "\\overline"
+    return
+
+
 def test_linebreak_after_double_backslash():
     input_string = "Some $2\\\\3 4\\\\\n6$."
     out = blacktex.clean(input_string)
