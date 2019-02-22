@@ -69,6 +69,9 @@ def _replace_obsolete_text_mods(string):
     string = string.replace("{\\sf ", "\\textsf{")
     string = string.replace("{\\sl ", "\\textsl{")
     string = string.replace("{\\tt ", "\\texttt{")
+    # https://tex.stackexchange.com/a/25914/13262:
+    # [\em] May be useful when defining macros. In continuous text \emph{...} should be
+    # preferred to \em.
     string = string.replace("{\\em ", "\\emph{")
     return string
 
@@ -286,7 +289,9 @@ def _put_spec_on_same_line_as_environment(string):
 
 
 def _put_label_on_same_line_as_environment(string):
-    return re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
+    out = re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
+    out = re.sub(r"(\\section{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
+    return out
 
 
 def _replace_colon_equal_by_coloneqq(string):

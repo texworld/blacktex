@@ -259,6 +259,10 @@ def test_env_label():
     input_string = "A\n\\begin{lemma}\n\\label{lvalpp}"
     out = blacktex.clean(input_string)
     assert out == "A\n\\begin{lemma}\\label{lvalpp}"
+
+    input_string = "A\n\\section{Intro}\n\\label{lvalpp}"
+    out = blacktex.clean(input_string)
+    assert out == "A\n\\section{Intro}\\label{lvalpp}"
     return
 
 
