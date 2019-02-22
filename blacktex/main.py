@@ -296,7 +296,9 @@ def _put_label_on_same_line_as_environment(string):
 
 
 def _replace_colon_equal_by_coloneqq(string):
-    return re.sub(r":=", r"\\coloneqq ", string)
+    out = re.sub(r":\s*=", r"\\coloneqq ", string)
+    out = re.sub(r"=\s*:", r"\\eqqcolon ", out)
+    return out
 
 
 def _remove_space_before_tabular_column_specification(string):
