@@ -291,6 +291,7 @@ def _put_spec_on_same_line_as_environment(string):
 def _put_label_on_same_line_as_environment(string):
     out = re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
     out = re.sub(r"(\\section{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
+    out = re.sub(r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
     return out
 
 
