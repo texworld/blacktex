@@ -35,16 +35,16 @@ def _remove_multiple_newlines(string):
 
 
 def _remove_whitespace_around_brackets(string):
-    string = re.sub("{\s+", "{", string)
-    string = re.sub("\s+}", "}", string)
-    string = re.sub("\(\s+", "(", string)
-    string = re.sub("\s+\)", ")", string)
-    string = re.sub("\s+\\\\right\)", "\\\\right)", string)
+    string = re.sub("{\\s+", "{", string)
+    string = re.sub("\\s+}", "}", string)
+    string = re.sub("\\(\\s+", "(", string)
+    string = re.sub("\\s+\\)", ")", string)
+    string = re.sub("\\s+\\\\right\\)", "\\\\right)", string)
     return string
 
 
 def _replace_dollar_dollar(string):
-    """Replace $$...$$ by \[...\].
+    """Replace $$...$$ by \\[...\\].
     """
     p = re.compile("\\$\\$")
     locations = [m.start() for m in p.finditer(string)]
@@ -69,16 +69,20 @@ def _replace_obsolete_text_mods(string):
     string = string.replace("{\\sf ", "\\textsf{")
     string = string.replace("{\\sl ", "\\textsl{")
     string = string.replace("{\\tt ", "\\texttt{")
+    # https://tex.stackexchange.com/a/25914/13262:
+    # [\em] May be useful when defining macros. In continuous text \emph{...} should be
+    # preferred to \em.
+    string = string.replace("{\\em ", "\\emph{")
     return string
 
 
 def _add_space_after_single_exponent(string):
-    string = re.sub("\\^([^{\\\\])([^\s\\$})])", r"^\1 \2", string)
+    string = re.sub("\\^([^{\\\\])([^\\s\\$})])", r"^\1 \2", string)
     return string
 
 
 def _replace_dots(string):
-    string = re.sub("\.\.\.", "\\dots", string)
+    string = re.sub("\\.\\.\\.", "\\\\dots", string)
     return string
 
 
@@ -87,28 +91,28 @@ def _replace_punctuation_outside_math(string):
     string = re.sub(",\\$", "$,", string)
     string = re.sub(";\\$", "$;", string)
     string = re.sub("!\\$", "$!", string)
-    string = re.sub("\?\\$", "$?", string)
+    string = re.sub("\\?\\$", "$?", string)
     return string
 
 
 def _remove_whitespace_before_punctuation(string):
-    string = re.sub("\s+\.", ".", string)
-    string = re.sub("\s+,", ",", string)
-    string = re.sub("\s+;", ";", string)
-    string = re.sub("\s+!", "!", string)
-    string = re.sub("\s+\?", "?", string)
+    string = re.sub("\\s+\\.", ".", string)
+    string = re.sub("\\s+,", ",", string)
+    string = re.sub("\\s+;", ";", string)
+    string = re.sub("\\s+!", "!", string)
+    string = re.sub("\\s+\\?", "?", string)
     return string
 
 
 def _add_nbsp_before_reference(string):
-    string = re.sub("\s+\\\\ref{", "~\\\\ref{", string)
-    string = re.sub("\s+\\\\eqref{", "~\\\\eqref{", string)
-    string = re.sub("\s+\\\\cite", "~\\\\cite", string)
+    string = re.sub("\\s+\\\\ref{", "~\\\\ref{", string)
+    string = re.sub("\\s+\\\\eqref{", "~\\\\eqref{", string)
+    string = re.sub("\\s+\\\\cite", "~\\\\cite", string)
     return string
 
 
 def _replace_double_nbsp(string):
-    string = re.sub("~~", "\\quad ", string)
+    string = re.sub("~~", "\\\\quad ", string)
     return string
 
 
@@ -129,7 +133,7 @@ def _substitute_string_ranges(string, ranges, replacements):
 
 
 def _replace_over(string):
-    p = re.compile("\\\\over")
+    p = re.compile("\\\\over[^a-z]")
     locations = [m.start() for m in p.finditer(string)]
 
     fracs = []
@@ -285,15 +289,20 @@ def _put_spec_on_same_line_as_environment(string):
 
 
 def _put_label_on_same_line_as_environment(string):
-    return re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
+    out = re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
+    out = re.sub(r"(\\section{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
+    out = re.sub(r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
+    return out
 
 
 def _replace_colon_equal_by_coloneqq(string):
-    return re.sub(r":=", r"\\coloneqq ", string)
+    out = re.sub(r":\s*=", r"\\coloneqq ", string)
+    out = re.sub(r"=\s*:", r"\\eqqcolon ", out)
+    return out
 
 
 def _remove_space_before_tabular_column_specification(string):
-    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2\n", string)
+    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2", string)
 
 
 def _add_spaces_around_equality_sign(string):
@@ -305,9 +314,6 @@ def _add_spaces_around_equality_sign(string):
 def clean(string):
     out = string
     out = _remove_comments(out)
-    out = _remove_trailing_whitespace(out)
-    out = _remove_multiple_newlines(out)
-    out = _remove_multiple_spaces(out)
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
@@ -331,4 +337,7 @@ def clean(string):
     out = _replace_colon_equal_by_coloneqq(out)
     out = _remove_space_before_tabular_column_specification(out)
     out = _add_spaces_around_equality_sign(out)
+    out = _remove_trailing_whitespace(out)
+    out = _remove_multiple_newlines(out)
+    out = _remove_multiple_spaces(out)
     return out

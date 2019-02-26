@@ -24,6 +24,13 @@ def test_readme():
     return
 
 
+def test_text_mods():
+    input_string = "{\\em it's me!}"
+    out = blacktex.clean(input_string)
+    assert out == "\\emph{it's me!}"
+    return
+
+
 def test_comments():
     input_string = "lorem  %some comment  \n %sit amet"
     out = blacktex.clean(input_string)
@@ -70,9 +77,9 @@ def test_multiple_spaces():
     out = blacktex.clean(input_string)
     assert out == "a\n    b\nc"
 
-    input_string = "\\[\n  S(T)\leq S(P_n).\n\\]\n"
+    input_string = "\\[\n  S(T)\\leq S(P_n).\n\\]\n"
     out = blacktex.clean(input_string)
-    assert out == "\\[\n  S(T)\leq S(P_n).\n\\]\n"
+    assert out == "\\[\n  S(T)\\leq S(P_n).\n\\]\n"
     return
 
 
@@ -130,7 +137,7 @@ def test_exponent_space():
 def test_triple_dots():
     input_string = "a,...,b"
     out = blacktex.clean(input_string)
-    assert out == "a,\dots,b"
+    assert out == "a,\\dots,b"
     return
 
 
@@ -158,7 +165,7 @@ def test_nbsp_before_ref():
 def test_double_nbsp():
     input_string = "Some~~text."
     out = blacktex.clean(input_string)
-    assert out == "Some\quad text."
+    assert out == "Some\\quad text."
     return
 
 
@@ -174,6 +181,13 @@ def test_over_frac_warn():
     with pytest.warns(UserWarning):
         out = blacktex.clean(input_string)
     assert out == "Some $2\\over 3^{4+x}$."
+    return
+
+
+def test_overline_warn():
+    input_string = "\\overline"
+    out = blacktex.clean(input_string)
+    assert out == "\\overline"
     return
 
 
@@ -245,6 +259,14 @@ def test_env_label():
     input_string = "A\n\\begin{lemma}\n\\label{lvalpp}"
     out = blacktex.clean(input_string)
     assert out == "A\n\\begin{lemma}\\label{lvalpp}"
+
+    input_string = "A\n\\section{Intro}\n\\label{lvalpp}"
+    out = blacktex.clean(input_string)
+    assert out == "A\n\\section{Intro}\\label{lvalpp}"
+
+    input_string = "A\n\\subsection{Intro}\n\\label{lvalpp}"
+    out = blacktex.clean(input_string)
+    assert out == "A\n\\subsection{Intro}\\label{lvalpp}"
     return
 
 
@@ -252,13 +274,25 @@ def test_coloneqq():
     input_string = "A:=b+c"
     out = blacktex.clean(input_string)
     assert out == "A\\coloneqq b+c"
+
+    input_string = "A := b+c"
+    out = blacktex.clean(input_string)
+    assert out == "A \\coloneqq b+c"
+
+    input_string = "A : = b+c"
+    out = blacktex.clean(input_string)
+    assert out == "A \\coloneqq b+c"
+
+    input_string = "b+c =  : A"
+    out = blacktex.clean(input_string)
+    assert out == "b+c \\eqqcolon A"
     return
 
 
 def test_tabular_column_spec():
-    input_string = "\\begin{tabular} \n {ccc}"
+    input_string = "\\begin{tabular} \n {ccc}\ncontent"
     out = blacktex.clean(input_string)
-    assert out == "\\begin{tabular}{ccc}\n"
+    assert out == "\\begin{tabular}{ccc}\ncontent"
     return
 
 
