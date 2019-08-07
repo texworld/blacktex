@@ -44,16 +44,5 @@ To run the tests, simply check out this repository and run
 pytest
 ```
 
-### Distribution
-
-To create a new release
-
-1. bump the `__version__` number,
-
-2. publish to PyPi and GitHub:
-    ```
-    $ make publish
-    ```
-
 ### License
 blacktex is published under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
