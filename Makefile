@@ -26,10 +26,10 @@ clean:
 
 format:
 	isort -rc .
-	black --check .
+	black .
 
 black:
-	black --check .
+	black .
 
 lint:
 	black --check .
