@@ -1,6 +1,7 @@
-# blacktex
-
-Cleans up your LaTeX files.
+<p align="center">
+  <a href="https://github.com/nschloe/blacktex"><img alt="blacktex" src="https://nschloe.github.io/blacktex/logo.svg" width="60%"></a>
+  <p align="center">Clean up your LaTeX files.</p>
+</p>
 
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/blacktex/master.svg)](https://circleci.com/gh/nschloe/blacktex/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/blacktex.svg)](https://codecov.io/gh/nschloe/blacktex)
@@ -9,7 +10,9 @@ Cleans up your LaTeX files.
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/blacktex)
 
 blacktex is a little tool, helping with the article editing for LaTeX. It removes all
-comments from a given file and corrects some common anti-patterns. For example, with
+comments from a given file and corrects [some common
+anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf). For example,
+with
 ```
 blacktex in.tex out.tex
 ```
