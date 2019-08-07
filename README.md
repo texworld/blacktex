@@ -1,15 +1,19 @@
-# blacktex
+<p align="center">
+  <a href="https://github.com/nschloe/blacktex"><img alt="blacktex" src="https://nschloe.github.io/blacktex/logo.svg" width="60%"></a>
+  <p align="center">Clean up your LaTeX files.</p>
+</p>
 
-Cleans up your LaTeX files.
-
-[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/blacktex/master.svg)](https://circleci.com/gh/nschloe/blacktex/tree/master)
-[![codecov](https://img.shields.io/codecov/c/github/nschloe/blacktex.svg)](https://codecov.io/gh/nschloe/blacktex)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg)](https://pypi.python.org/pypi/blacktex)
-[![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/blacktex)
+[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/blacktex/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/blacktex/tree/master)
+[![codecov](https://img.shields.io/codecov/c/github/nschloe/blacktex.svg?style=flat-square)](https://codecov.io/gh/nschloe/blacktex)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
+[![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg?style=flat-square)](https://pypi.python.org/pypi/blacktex)
+[![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/blacktex)
+[![PyPi downloads](https://img.shields.io/pypi/dd/blacktex.svg?style=flat-square)](https://pypistats.org/packages/blacktex)
 
 blacktex is a little tool, helping with the article editing for LaTeX. It removes all
-comments from a given file and corrects some common anti-patterns. For example, with
+comments from a given file and corrects [some common
+anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf). For example,
+with
 ```
 blacktex in.tex out.tex
 ```
@@ -43,17 +47,6 @@ To run the tests, simply check out this repository and run
 ```
 pytest
 ```
-
-### Distribution
-
-To create a new release
-
-1. bump the `__version__` number,
-
-2. publish to PyPi and GitHub:
-    ```
-    $ make publish
-    ```
 
 ### License
 blacktex is published under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).

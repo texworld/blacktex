@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-#
 import codecs
 import os
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 base_dir = os.path.abspath(os.path.dirname(__file__))
 about = {}
@@ -22,7 +20,8 @@ setup(
     url="https://github.com/nschloe/blacktex",
     author=about["__author__"],
     author_email=about["__author_email__"],
-    install_requires=["pipdate >=0.3.0, <0.4.0"],
+    install_requires=[],
+    python_requires=">=3",
     description="Cleans up your LaTeX files",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
@@ -32,7 +31,6 @@ setup(
         about["__status__"],
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         "Topic :: Text Editors :: Text Processing",
         "Topic :: Text Processing",
