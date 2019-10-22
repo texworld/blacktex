@@ -33,4 +33,4 @@ black:
 
 lint:
 	black --check .
-	flake8 setup.py blacktex/ test/*.py
+	flake8 .

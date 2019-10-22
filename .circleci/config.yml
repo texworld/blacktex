@@ -3,28 +3,25 @@ version: 2
 jobs:
   lint:
     docker:
-      - image: ubuntu:18.04
+      - image: circleci/python:3.7
     steps:
       - checkout
-      - run: apt update
-      - run: apt install -y python3-pip
-      - run: pip3 install -U black flake8
-      - run: LC_ALL=C.UTF-8 black --check .
-      - run: flake8 setup.py blacktex/ test/*.py
+      - run: pip3 install -U black flake8 --user
+      - run: black --check .
+      - run: flake8 .
   build:
     working_directory: ~/work
     docker:
-      - image: ubuntu:18.04
+      - image: circleci/python:3.7
     steps:
-      - run: apt-get update
-      - run: apt-get install -y git python3-pip
-      - run: pip3 install -U pytest pytest-cov
+      - run: pip3 install -U pytest pytest-cov --user
       - checkout
-      - run: pip3 install .
+      - run: pip3 install . --user
       # The tests
-      - run: cd test/ && pytest -W error::UserWarning --cov blacktex
+      - run:
+          command: pytest -W error::UserWarning --cov blacktex
+          working_directory: test/
       # submit to codecov
-      - run: apt-get install -y curl
       - run: bash <(curl -s https://codecov.io/bash)
 
 workflows:

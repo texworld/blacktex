@@ -1,4 +1,3 @@
-import codecs
 import os
 
 from setuptools import find_packages, setup
@@ -7,10 +6,6 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 about = {}
 with open(os.path.join(base_dir, "blacktex", "__about__.py"), "rb") as f:
     exec(f.read(), about)
-
-
-def read(fname):
-    return codecs.open(os.path.join(base_dir, fname), encoding="utf-8").read()
 
 
 setup(
@@ -23,7 +18,7 @@ setup(
     install_requires=[],
     python_requires=">=3",
     description="Cleans up your LaTeX files",
-    long_description=read("README.md"),
+    long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     license=about["__license__"],
     classifiers=[
