@@ -35,5 +35,5 @@ jobs:
       run: |
         pip install pytest pytest-cov
         cd test/ && pytest -W error::UserWarning --cov blacktex
-    - name: Submit to codecov
-      run: bash <(curl -s https://codecov.io/bash)
+    # - name: Submit to codecov
+    #   run: bash <(curl -s https://codecov.io/bash)
