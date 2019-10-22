@@ -19,8 +19,8 @@ jobs:
       - run: pip3 install . --user
       # The tests
       - run:
-        command: pytest -W error::UserWarning --cov blacktex
-        working_directory: test/
+          command: pytest -W error::UserWarning --cov blacktex
+          working_directory: test/
       # submit to codecov
       - run: bash <(curl -s https://codecov.io/bash)
 
