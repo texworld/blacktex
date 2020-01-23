@@ -123,9 +123,23 @@ def test_subsuperscript_space():
     out = blacktex.clean(input_string)
     assert out == "n^\\alpha"
 
+    input_string = "a^2_PP^2"
+    out = blacktex.clean(input_string)
+    assert out == "a^2_P P^2"
+
+    input_string = "a_2^PP_2"
+    out = blacktex.clean(input_string)
+    assert out == "a_2^P P_2"
+
 
 def test_triple_dots():
     input_string = "a,...,b"
+    out = blacktex.clean(input_string)
+    assert out == "a,\\dots,b"
+
+
+def test_cdots():
+    input_string = "a,\\cdots,b"
     out = blacktex.clean(input_string)
     assert out == "a,\\dots,b"
 

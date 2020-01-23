@@ -75,12 +75,13 @@ def _replace_obsolete_text_mods(string):
 
 
 def _add_space_after_single_subsuperscript(string):
-    string = re.sub("([_\\^])([^{\\\\])([^\\s\\$})])", r"\1\2 \3", string)
+    string = re.sub("([_\\^])([^{\\\\])([^_\\^\\s\\$})])", r"\1\2 \3", string)
     return string
 
 
 def _replace_dots(string):
     string = re.sub("\\.\\.\\.", "\\\\dots", string)
+    string = re.sub(",\\\\cdots,", ",\\\\dots,", string)
     return string
 
 
