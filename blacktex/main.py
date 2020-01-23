@@ -74,8 +74,8 @@ def _replace_obsolete_text_mods(string):
     return string
 
 
-def _add_space_after_single_exponent(string):
-    string = re.sub("\\^([^{\\\\])([^\\s\\$})])", r"^\1 \2", string)
+def _add_space_after_single_subsuperscript(string):
+    string = re.sub("([_\\^])([^{\\\\])([^\\s\\$})])", r"\1\2 \3", string)
     return string
 
 
@@ -309,7 +309,7 @@ def clean(string):
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
-    out = _add_space_after_single_exponent(out)
+    out = _add_space_after_single_subsuperscript(out)
     out = _replace_dots(out)
     out = _replace_punctuation_outside_math(out)
     out = _remove_whitespace_before_punctuation(out)

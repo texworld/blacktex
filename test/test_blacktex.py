@@ -98,10 +98,14 @@ def test_whitespace_after_curly():
     assert out == "\\textit{lorem\n\n\n ipsum dolor sit amet}"
 
 
-def test_exponent_space():
+def test_subsuperscript_space():
     input_string = "2^ng"
     out = blacktex.clean(input_string)
     assert out == "2^n g"
+
+    input_string = "2_ng"
+    out = blacktex.clean(input_string)
+    assert out == "2_n g"
 
     input_string = "$1/n^3$."
     out = blacktex.clean(input_string)
