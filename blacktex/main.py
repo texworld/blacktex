@@ -187,16 +187,7 @@ def _replace_over(string):
 
 
 def _add_linebreak_after_double_backslash(string):
-    p = re.compile(r"\\\\")
-    locations = [m.start() for m in p.finditer(string)]
-    insert = []
-    for loc in locations:
-        if string[loc + 2] != "\n":
-            insert.append(loc)
-
-    return _substitute_string_ranges(
-        string, [(i + 2, i + 2) for i in insert], len(insert) * ["\n"]
-    )
+    return re.sub(r"\\\\([^\n])", r"\\\\\n\1", string)
 
 
 def _add_backslash_for_keywords(string):
@@ -304,8 +295,11 @@ def _remove_space_before_tabular_column_specification(string):
 
 
 def _add_spaces_around_equality_sign(string):
-    string = re.sub(r"([^\s])=", r"\1 =", string)
-    string = re.sub(r"=([^\s])", r"= \1", string)
+    string = re.sub(r"([^\s&])=", r"\1 =", string)
+    string = re.sub(r"([^\s])&=", r"\1 &=", string)
+
+    string = re.sub(r"=([^\s&])", r"= \1", string)
+    string = re.sub(r"=&([^\s])", r"=& \1", string)
     return string
 
 
