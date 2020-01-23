@@ -181,7 +181,7 @@ def _replace_over(string):
         fracs.append((numerator, denominator))
         ranges.append((k0 + 1, k1))
 
-    fracs = ["\\frac{{{}}}{{{}}}".format(num, den) for num, den in fracs]
+    fracs = [f"\\frac{{{num}}}{{{den}}}" for num, den in fracs]
 
     return _substitute_string_ranges(string, ranges, fracs)
 
@@ -202,7 +202,7 @@ def _add_linebreak_after_double_backslash(string):
 def _add_backslash_for_keywords(string):
     insert = []
     for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
-        p = re.compile(r"[^A-Za-z]{}[^A-Za-z]".format(keyword))
+        p = re.compile(fr"[^A-Za-z]{keyword}[^A-Za-z]")
         locations = [m.start() for m in p.finditer(string)]
         for loc in locations:
             if string[loc] != "\\":

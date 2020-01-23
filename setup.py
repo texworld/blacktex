@@ -16,7 +16,7 @@ setup(
     author=about["__author__"],
     author_email=about["__author_email__"],
     install_requires=[],
-    python_requires=">=3",
+    python_requires=">=3.6",
     description="Cleans up your LaTeX files",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
