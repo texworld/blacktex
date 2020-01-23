@@ -74,13 +74,14 @@ def _replace_obsolete_text_mods(string):
     return string
 
 
-def _add_space_after_single_exponent(string):
-    string = re.sub("\\^([^{\\\\])([^\\s\\$})])", r"^\1 \2", string)
+def _add_space_after_single_subsuperscript(string):
+    string = re.sub("([_\\^])([^{\\\\])([^_\\^\\s\\$})])", r"\1\2 \3", string)
     return string
 
 
 def _replace_dots(string):
     string = re.sub("\\.\\.\\.", "\\\\dots", string)
+    string = re.sub(",\\\\cdots,", ",\\\\dots,", string)
     return string
 
 
@@ -187,16 +188,7 @@ def _replace_over(string):
 
 
 def _add_linebreak_after_double_backslash(string):
-    p = re.compile(r"\\\\")
-    locations = [m.start() for m in p.finditer(string)]
-    insert = []
-    for loc in locations:
-        if string[loc + 2] != "\n":
-            insert.append(loc)
-
-    return _substitute_string_ranges(
-        string, [(i + 2, i + 2) for i in insert], len(insert) * ["\n"]
-    )
+    return re.sub(r"\\\\([^\n])", r"\\\\\n\1", string)
 
 
 def _add_backslash_for_keywords(string):
@@ -304,8 +296,11 @@ def _remove_space_before_tabular_column_specification(string):
 
 
 def _add_spaces_around_equality_sign(string):
-    string = re.sub(r"([^\s])=", r"\1 =", string)
-    string = re.sub(r"=([^\s])", r"= \1", string)
+    string = re.sub(r"([^\s&])=", r"\1 =", string)
+    string = re.sub(r"([^\s])&=", r"\1 &=", string)
+
+    string = re.sub(r"=([^\s&])", r"= \1", string)
+    string = re.sub(r"=&([^\s])", r"=& \1", string)
     return string
 
 
@@ -315,7 +310,7 @@ def clean(string):
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
-    out = _add_space_after_single_exponent(out)
+    out = _add_space_after_single_subsuperscript(out)
     out = _replace_dots(out)
     out = _replace_punctuation_outside_math(out)
     out = _remove_whitespace_before_punctuation(out)
