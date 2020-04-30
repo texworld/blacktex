@@ -1,7 +1,10 @@
-__version__ = "0.2.1"
-__author__ = "Nico Schlömer"
-__author_email__ = "nico.schloemer@gmail.com"
-__copyright__ = f"Copyright (c) 2018-2020, {__author__} <{__author_email__}>"
-__website__ = "https://github.com/nschloe/blacktex"
-__license__ = "License :: OSI Approved :: MIT License"
-__status__ = "Development Status :: 4 - Beta"
+try:
+    # Python 3.8
+    from importlib import metadata
+except ImportError:
+    import importlib_metadata as metadata
+
+try:
+    __version__ = metadata.version("blacktex")
+except Exception:
+    __version__ = "unknown"

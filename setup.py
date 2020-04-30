@@ -13,6 +13,10 @@ setup(
     version=about["__version__"],
     packages=find_packages(),
     url="https://github.com/nschloe/blacktex",
+    project_urls={
+        "Code": "https://github.com/nschloe/blacktex",
+        "Issue tracker": "https://github.com/nschloe/blacktex/issues",
+    },
     author=about["__author__"],
     author_email=about["__author_email__"],
     install_requires=[],
