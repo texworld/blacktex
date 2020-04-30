@@ -6,6 +6,7 @@
 [![CircleCI](https://img.shields.io/circleci/project/github/nschloe/blacktex/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/blacktex/tree/master)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/blacktex.svg?style=flat-square)](https://codecov.io/gh/nschloe/blacktex)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/blacktex.svg?style=flat-square)](https://pypi.org/pypi/blacktex/)
 [![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg?style=flat-square)](https://pypi.python.org/pypi/blacktex)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/blacktex)
 [![PyPi downloads](https://img.shields.io/pypi/dm/blacktex.svg?style=flat-square)](https://pypistats.org/packages/blacktex)
@@ -49,4 +50,4 @@ pytest
 ```
 
 ### License
-blacktex is published under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
+This software is published under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
