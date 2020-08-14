@@ -30,7 +30,8 @@ def test_text_mods():
 def test_comments():
     input_string = "lorem  %some comment  \n %sit amet"
     out = blacktex.clean(input_string)
-    assert out == "lorem"
+    # add newline, since it is there in the original line with inline comment
+    assert out == "lorem\n"
 
     input_string = "% lorem some comment  \n sit amet"
     out = blacktex.clean(input_string)

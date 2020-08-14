@@ -1,149 +1,275 @@
+from abc import ABC, abstractmethod
 import re
 import warnings
 
 
-def _remove_comments(string):
-    comment_lines = []
-    lines = string.split("\n")
-    for k, line in enumerate(lines):
-        sline = line.strip()
-        if len(sline) > 0 and sline[0] == "%":
-            comment_lines.append(k)
-    string = "\n".join([lines[k] for k in range(len(lines)) if k not in comment_lines])
-
-    # https://stackoverflow.com/a/2319116/353337
-    string = re.sub("%.*?\n", "\n", string)
-    string = re.sub("%.*?$", "", string)
-    return string
+class TexString:
+    def __init__(self, string):
+        self.string = string
 
 
-def _remove_trailing_whitespace(string):
-    return "\n".join([line.rstrip() for line in string.split("\n")])
+class Command(ABC):
+    def __init__(self, receiver):
+        self.receiver = receiver
+
+    @abstractmethod
+    def execute(self):
+        pass
+
+    def find_locations(self, pattern):
+        p = re.compile(pattern)
+        return [
+            m.start()
+            for m in p.finditer(self.receiver.string)
+        ]
 
 
-def _remove_multiple_spaces(string):
-    """Replaces multiple spaces by one, except after a newline.
-    """
-    return re.sub("([^\n ])  +", r"\1 ", string)
+class SubstituteMixin:
+    @staticmethod
+    def regex_sub(string, mapping):
+        for match_pattern, replacement_pattern in mapping.items():
+            string = re.sub(
+                match_pattern,
+                replacement_pattern,
+                string,
+            )
+        return string
+
+    @staticmethod
+    def substitute_string_ranges(string, ranges, replacements):
+        if ranges:
+            lst = [string[: ranges[0][0]]]
+            for k, replacement in enumerate(replacements[:-1]):
+                lst += [replacement, string[ranges[k][1] : ranges[k + 1][0]]]
+            lst += [replacements[-1], string[ranges[-1][1] :]]
+            string = "".join(lst)
+        return string
 
 
-def _remove_multiple_newlines(string):
-    string = re.sub("\n\n\n\n", "\n\n\n", string)
-    return string
+class RemoveComments(Command, SubstituteMixin):
+    def execute(self):
+        self._drop_commented_lines()
+        # https://stackoverflow.com/a/2319116/353337
+        mapping = {
+            "%.*?\n": "\n",
+            "%.*?$": "",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+    def _drop_commented_lines(self):
+        self.receiver.string = "".join([
+            line
+            for line in self.receiver.string.splitlines(True)
+            if not self._is_commented_line(line)
+        ])
+
+    @staticmethod
+    def _is_commented_line(line):
+        return line.lstrip().startswith("%")
 
 
-def _remove_whitespace_around_brackets(string):
-    string = re.sub("{\\s+", "{", string)
-    string = re.sub("\\s+}", "}", string)
-    string = re.sub("\\(\\s+", "(", string)
-    string = re.sub("\\s+\\)", ")", string)
-    string = re.sub("\\s+\\\\right\\)", "\\\\right)", string)
-    return string
+class RemoveTrailingWhitespace(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r'[ \t]+(\n|\Z)': r'\1',
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _replace_dollar_dollar(string):
-    """Replace $$...$$ by \\[...\\].
-    """
-    p = re.compile("\\$\\$")
-    locations = [m.start() for m in p.finditer(string)]
-    assert len(locations) % 2 == 0
-
-    k = 0
-    ranges = []
-    replacements = []
-    while k < len(locations):
-        ranges.append((locations[k], locations[k + 1] + 2))
-        replacements.append("\\[" + string[locations[k] + 2 : locations[k + 1]] + "\\]")
-        k += 2
-
-    return _substitute_string_ranges(string, ranges, replacements)
+class RemoveMultipleSpaces(Command, SubstituteMixin):
+    def execute(self):
+        """Replace multiple spaces by one, except after a newline."""
+        mapping = {"([^\n ])  +": r"\1 "}
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _replace_obsolete_text_mods(string):
-    string = string.replace("{\\bf ", "\\textbf{")
-    string = string.replace("{\\it ", "\\textit{")
-    string = string.replace("{\\rm ", "\\textrm{")
-    string = string.replace("{\\sc ", "\\textsc{")
-    string = string.replace("{\\sf ", "\\textsf{")
-    string = string.replace("{\\sl ", "\\textsl{")
-    string = string.replace("{\\tt ", "\\texttt{")
-    # https://tex.stackexchange.com/a/25914/13262:
-    # [\em] May be useful when defining macros. In continuous text \emph{...} should be
-    # preferred to \em.
-    string = string.replace("{\\em ", "\\emph{")
-    return string
+class RemoveMultipleNewlines(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {"\n\n\n\n": "\n\n\n"}
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _add_space_after_single_subsuperscript(string):
-    string = re.sub("([_\\^])([^{\\\\])([^_\\^\\s\\$})])", r"\1\2 \3", string)
-    return string
+class RemoveWhitespaceAroundBrackets(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r"{\s+": "{",
+            r"\s+}": "}",
+            r"\(\s+": "(",
+            r"\s+\)": ")",
+            r"\s+\\right\)": r"\\right)",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _replace_dots(string):
-    string = re.sub("\\.\\.\\.", "\\\\dots", string)
-    string = re.sub(",\\\\cdots,", ",\\\\dots,", string)
-    return string
+class ReplaceDoubleDollarInline(Command, SubstituteMixin):
+    def execute(self):
+        """Replace $$...$$ with \\[...\\]."""
+        if self.locations:
+            self._make_replacements()
+
+    @property
+    def locations(self):
+        locations = self.find_locations(r"\$\$")
+        if len(locations) % 2 != 0:
+            excerpt = self.receiver.string[locations[0]:20]
+            msg = f"Unmatching number of double dollar signs\n{excerpt}"
+            raise ValueError(msg)
+        return locations
+
+    def _make_replacements(self):
+        assert len(self.locations) % 2 == 0
+        while self.locations:
+            start_idx, end_idx = self._find_range()
+
+            replacement_str = self._find_replacement()
+            preceding = self.receiver.string[:start_idx].rstrip()
+            following = self.receiver.string[end_idx:].lstrip()
+            self.receiver.string = "".join([
+                preceding,
+                replacement_str,
+                following,
+            ])
+
+    def _find_range(self):
+        return (self.locations[0], self.locations[1] + 2)
+
+    def _find_replacement(self):
+        start_idx = self.locations[0] + 2
+        end_idx = self.locations[1]
+        inner_content = self.receiver.string[start_idx:end_idx].strip()
+        return "\n".join([
+            "",
+            r"\[",
+            inner_content,
+            r"\]",
+            "",
+        ])
 
 
-def _replace_punctuation_outside_math(string):
-    string = re.sub("\\.\\$", "$.", string)
-    string = re.sub(",\\$", "$,", string)
-    string = re.sub(";\\$", "$;", string)
-    string = re.sub("!\\$", "$!", string)
-    string = re.sub("\\?\\$", "$?", string)
-    return string
+class ReplaceObsoleteTextMods(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r"{\\bf\s+(.*)\}": r"\\textbf{\1}",
+            r"{\\it\s+(.*)\}": r"\\textit{\1}",
+            r"{\\rm\s+(.*)\}": r"\\textrm{\1}",
+            r"{\\sc\s+(.*)\}": r"\\textsc{\1}",
+            r"{\\sf\s+(.*)\}": r"\\textsf{\1}",
+            r"{\\sl\s+(.*)\}": r"\\textsl{\1}",
+            r"{\\tt\s+(.*)\}": r"\\texttt{\1}",
+            # https://tex.stackexchange.com/a/25914/13262:
+            # [\em] May be useful when defining macros.
+            # In continuous text \emph{...} should be
+            # preferred to \em.
+            r"{\\em\s+(.*)\}": r"\\emph{\1}",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _remove_whitespace_before_punctuation(string):
-    string = re.sub("\\s+\\.", ".", string)
-    string = re.sub("\\s+,", ",", string)
-    string = re.sub("\\s+;", ";", string)
-    string = re.sub("\\s+!", "!", string)
-    string = re.sub("\\s+\\?", "?", string)
-    return string
+class AddSpaceAfterSingleSubsuperscript(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            "([_\\^])([^{\\\\])([^_\\^\\s\\$})])": r"\1\2 \3",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _add_nbsp_before_reference(string):
-    string = re.sub("\\s+\\\\ref{", "~\\\\ref{", string)
-    string = re.sub("\\s+\\\\eqref{", "~\\\\eqref{", string)
-    string = re.sub("\\s+\\\\cite", "~\\\\cite", string)
-    return string
+class ReplaceDots(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            "\\.\\.\\.": "\\\\dots",
+            ",\\\\cdots,": ",\\\\dots,",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _replace_double_nbsp(string):
-    string = re.sub("~~", "\\\\quad ", string)
-    return string
+class ReplacePunctuationOutsideMath(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            "\\.\\$": "$.",
+            ",\\$": "$,",
+            ";\\$": "$;",
+            "!\\$": "$!",
+            "\\?\\$": "$?",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _replace_nbsp_space(string):
-    string = re.sub("~ ", " ", string)
-    string = re.sub(" ~", " ", string)
-    return string
+class RemoveWhitespaceBeforePunctuation(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            "\\s+\\.": ".",
+            "\\s+,": ",",
+            "\\s+;": ";",
+            "\\s+!": "!",
+            "\\s+\\?": "?",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _substitute_string_ranges(string, ranges, replacements):
-    if ranges:
-        lst = [string[: ranges[0][0]]]
-        for k, replacement in enumerate(replacements[:-1]):
-            lst += [replacement, string[ranges[k][1] : ranges[k + 1][0]]]
-        lst += [replacements[-1], string[ranges[-1][1] :]]
-        string = "".join(lst)
-    return string
+class AddNonBreakingSpaceBeforeReference(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            "\\s+\\\\ref{": "~\\\\ref{",
+            "\\s+\\\\eqref{": "~\\\\eqref{",
+            "\\s+\\\\cite": "~\\\\cite",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _replace_over(string):
-    p = re.compile("\\\\over[^a-z]")
-    locations = [m.start() for m in p.finditer(string)]
+class ReplaceDoubleNonBreakingSpace(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {"~~": "\\\\quad "}
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
-    fracs = []
-    ranges = []
 
-    for loc in locations:
+class ReplaceNonBreakingSpace(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            "~ ": " ",
+            " ~": " ",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+
+class ReplaceOver(Command, SubstituteMixin):
+    def execute(self):
+        locations = self.find_locations("\\\\over[^a-z]")
+        ranges, replacements = self._find_ranges_and_replacements(locations)
+        self.receiver.string = self.substitute_string_ranges(
+            self.receiver.string,
+            ranges,
+            replacements,
+        )
+
+    def _find_ranges_and_replacements(self, locations):
+        frac_values = []
+        ranges = []
+
+        for loc in locations:
+            range_and_frac_pair = self._find_range_and_frac_pair(
+                loc,
+                self.receiver.string,
+            )
+            if range_and_frac_pair:
+                range_, frac_pair = range_and_frac_pair
+                ranges.append(range_)
+                frac_values.append(frac_pair)
+            else:
+                continue
+
+        replacements = [
+            f"\\frac{{{num}}}{{{den}}}"
+            for num, den in frac_values
+        ]
+
+        return ranges, replacements
+
+    def _find_range_and_frac_pair(self, location, string):
         skip = False
 
         # Starting from loc, search to the left for an open {
         num_open_brackets = 1
-        k0 = loc - 1
+        k0 = location - 1
         while num_open_brackets > 0:
             try:
                 char0 = string[k0]
@@ -160,177 +286,226 @@ def _replace_over(string):
         if skip:
             warning = (
                 "Could not convert \\over to \\frac at \n```\n"
-                + string[max(0, loc - 20) : loc + 24]
+                + string[max(0, location - 20) : location + 24]
                 + "\n```\n"
             )
             warnings.warn(warning)
-            continue
+            return
 
-        numerator = string[k0 + 2 : loc].strip()
+        numerator = string[k0 + 2 : location].strip()
 
-        # Starting from loc+5, search to the right for an open }
+        # Starting from location+5, search to the right for an open }
         num_open_brackets = 1
-        k1 = loc + 5
+        k1 = location + 5
         while num_open_brackets > 0:
             if string[k1] == "}":
                 num_open_brackets -= 1
             elif string[k1] == "{":
                 num_open_brackets += 1
             k1 += 1
-        denominator = string[loc + 5 : k1 - 1].strip()
+        denominator = string[location + 5 : k1 - 1].strip()
 
-        fracs.append((numerator, denominator))
-        ranges.append((k0 + 1, k1))
-
-    fracs = [f"\\frac{{{num}}}{{{den}}}" for num, den in fracs]
-
-    return _substitute_string_ranges(string, ranges, fracs)
+        frac_pair = (numerator, denominator)
+        range_ = (k0 + 1, k1)
+        return range_, frac_pair
 
 
-def _add_linebreak_after_double_backslash(string):
-    return re.sub(r"\\\\([^\n])", r"\\\\\n\1", string)
+class AddLineBreakAfterDoubleBackslash(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {r"\\\\([^\n])": r"\\\\\n\1"}
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
-def _add_backslash_for_keywords(string):
-    insert = []
-    for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
-        p = re.compile(fr"[^A-Za-z]{keyword}[^A-Za-z]")
-        locations = [m.start() for m in p.finditer(string)]
-        for loc in locations:
-            if string[loc] != "\\":
-                insert.append(loc)
-
-    return _substitute_string_ranges(
-        string, [(i + 1, i + 1) for i in insert], len(insert) * ["\\"]
-    )
-
-
-def _add_curly_brackets_around_round_brackets_with_exponent(string):
-    p = re.compile(r"\)\^")
-    locations = [m.start() for m in p.finditer(string)]
-
-    insert = []
-    replacements = []
-    for loc in locations:
-        # Starting from loc, search to the left for an open (
-        num_open_brackets = 1
-        k = loc - 1
-        while num_open_brackets > 0:
-            if string[k] == "(":
-                num_open_brackets -= 1
-            elif string[k] == ")":
-                num_open_brackets += 1
-            k -= 1
-        k += 1
-
-        if k - 5 >= 0 and string[k - 5 : k] == "\\left":
-            insert.append(k - 5)
-        else:
-            insert.append(k)
-        replacements.append("{")
-
-        insert.append(loc + 1)
-        replacements.append("}")
-
-    return _substitute_string_ranges(string, [(i, i) for i in insert], replacements)
-
-
-def _replace_def_by_newcommand(string):
-    p = re.compile(r"\\def\\[A-Za-z]+")
-
-    ranges = []
-    replacements = []
-    for m in p.finditer(string):
-        ranges.append((m.start(), m.end()))
-        replacements.append(
-            "\\newcommand{{{}}}".format(string[m.start() + 4 : m.end()])
+class AddBackslashForKeywords(Command, SubstituteMixin):
+    def execute(self):
+        ranges, replacements = self._find_ranges_and_replacements()
+        self.receiver.string = self.substitute_string_ranges(
+            self.receiver.string,
+            ranges,
+            replacements,
         )
 
-    return _substitute_string_ranges(string, ranges, replacements)
+    def _find_ranges_and_replacements(self):
+        where_to_insert = []
+        for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
+            pattern = fr"[^A-Za-z]{keyword}[^A-Za-z]"
+            for loc in self.find_locations(pattern):
+                if self.receiver.string[loc] != "\\":
+                    where_to_insert.append(loc)
+
+        ranges = [
+            (i + 1, i + 1)
+            for i in where_to_insert
+        ]
+
+        replacements = len(where_to_insert) * ["\\"]
+        return ranges, replacements
 
 
-def _add_linebreak_around_begin_end(string):
-    string = re.sub(r"([^\n ]) *(\\begin{.*?})", r"\1\n\2", string)
-    string = re.sub(r"(\\begin{.*?}) *([^\n ])", r"\1\n\2", string)
+class AddCurlyBracketsAroundRoundBracketsWithExp(Command, SubstituteMixin):
+    def execute(self):
+        locations = self.find_locations(r"\)\^")
+        ranges, replacements = self._find_ranges_and_replacements(locations)
+        self.receiver.string = self.substitute_string_ranges(
+            self.receiver.string,
+            ranges,
+            replacements,
+        )
 
-    string = re.sub(r"([^\n ]) *(\\end{.*?})", r"\1\n\2", string)
-    string = re.sub(r"(\\end{.*?}) *([^\n ])", r"\1\n\2", string)
+    def _find_ranges_and_replacements(self, locations):
+        insert = []
+        replacements = []
+        for loc in locations:
+            # Starting from loc, search to the left for an open (
+            num_open_brackets = 1
+            k = loc - 1
+            while num_open_brackets > 0:
+                if self.receiver.string[k] == "(":
+                    num_open_brackets -= 1
+                elif self.receiver.string[k] == ")":
+                    num_open_brackets += 1
+                k -= 1
+            k += 1
 
-    string = re.sub(r"([^\n ]) *(\\\[)", r"\1\n\2", string)
-    string = re.sub(r"(\\\[) *([^\n ])", r"\1\n\2", string)
+            if k - 5 >= 0 and self.receiver.string[k - 5 : k] == "\\left":
+                insert.append(k - 5)
+            else:
+                insert.append(k)
+            replacements.append("{")
 
-    string = re.sub(r"([^\n ]) *(\\\])", r"\1\n\2", string)
-    string = re.sub(r"(\\\]) *([^\n ])", r"\1\n\2", string)
-    return string
+            insert.append(loc + 1)
+            replacements.append("}")
 
-
-def _replace_centerline(string):
-    return re.sub(r"\\centerline{", r"{\\centering ", string)
-
-
-def _replace_eqnarray(string):
-    return re.sub("eqnarray", "align", string)
-
-
-def _put_spec_on_same_line_as_environment(string):
-    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])\n", r"\1\2", string)
-    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])([^\n])", r"\1\2\n\3", string)
-    return string
-
-
-def _put_label_on_same_line_as_environment(string):
-    out = re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
-    out = re.sub(r"(\\section{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
-    out = re.sub(r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
-    return out
-
-
-def _replace_colon_equal_by_coloneqq(string):
-    out = re.sub(r":\s*=", r"\\coloneqq ", string)
-    out = re.sub(r"=\s*:", r"\\eqqcolon ", out)
-    return out
+        ranges = [(i, i) for i in insert]
+        return ranges, replacements
 
 
-def _remove_space_before_tabular_column_specification(string):
-    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2", string)
+class ReplaceDefWithNewcommand(Command, SubstituteMixin):
+    def execute(self):
+        ranges, replacements = self._find_ranges_and_replacements()
+        self.receiver.string = self.substitute_string_ranges(
+            self.receiver.string,
+            ranges,
+            replacements,
+        )
+
+    def _find_ranges_and_replacements(self):
+        p = re.compile(r"\\def\\[A-Za-z]+")
+
+        ranges = []
+        replacements = []
+        for m in p.finditer(self.receiver.string):
+            ranges.append((m.start(), m.end()))
+            replacements.append(
+                "\\newcommand{{{}}}".format(
+                    self.receiver.string[m.start() + 4 : m.end()]
+                )
+            )
+        return ranges, replacements
 
 
-def _add_spaces_around_equality_sign(string):
-    string = re.sub(r"([^\s&])=", r"\1 =", string)
-    string = re.sub(r"([^\s])&=", r"\1 &=", string)
+class AddLineBreakAroundBeginEnd(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r"([^\n ]) *(\\begin{.*?})": r"\1\n\2",
+            r"(\\begin{.*?}) *([^\n ])": r"\1\n\2",
+            r"([^\n ]) *(\\end{.*?})": r"\1\n\2",
+            r"(\\end{.*?}) *([^\n ])": r"\1\n\2",
+            r"([^\n ]) *(\\\[)": r"\1\n\2",
+            r"(\\\[) *([^\n ])": r"\1\n\2",
+            r"([^\n ]) *(\\\])": r"\1\n\2",
+            r"(\\\]) *([^\n ])": r"\1\n\2",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
-    string = re.sub(r"=([^\s&])", r"= \1", string)
-    string = re.sub(r"=&([^\s])", r"=& \1", string)
-    return string
+
+class ReplaceCenterLine(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {r"\\centerline{": r"{\\centering "}
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+
+class ReplaceEqnarray(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {"eqnarray": "align"}
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+
+class PutSpecOnSameLineAsEnvironment(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r"(\\begin{.*?})\s*(\[.*?\])\n": r"\1\2",
+            r"(\\begin{.*?})\s*(\[.*?\])([^\n])": r"\1\2\n\3",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+
+class PutLabelOnSameLineAsEnvironment(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?": r"\1\2\3\4",
+            r"(\\section{.*?})\s+(\\label{.*?})(\n)?": r"\1\2\3",
+            r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?": r"\1\2\3",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+
+class ReplaceColonEqualWithColoneqq(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r":\s*=\s*": r"\\coloneqq ",
+            r"=\s*:\s*": r"\\eqqcolon ",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+
+class RemoveSpaceBeforeTabularColumnSpecification(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {r"(\\begin{tabular})\s*({.*?})": r"\1\2"}
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+
+
+class AddSpaceAroundEqualitySign(Command, SubstituteMixin):
+    def execute(self):
+        mapping = {
+            r"([^\s&])=": r"\1 =",
+            r"([^\s])&=": r"\1 &=",
+            r"=([^\s&])": r"= \1",
+            r"=&([^\s])": r"=& \1",
+        }
+        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
 
 def clean(string):
-    out = string
-    out = _remove_comments(out)
-    out = _replace_dollar_dollar(out)
-    out = _replace_obsolete_text_mods(out)
-    out = _remove_whitespace_around_brackets(out)
-    out = _add_space_after_single_subsuperscript(out)
-    out = _replace_dots(out)
-    out = _replace_punctuation_outside_math(out)
-    out = _remove_whitespace_before_punctuation(out)
-    out = _add_nbsp_before_reference(out)
-    out = _replace_double_nbsp(out)
-    out = _replace_nbsp_space(out)
-    out = _replace_over(out)
-    out = _add_linebreak_after_double_backslash(out)
-    out = _add_backslash_for_keywords(out)
-    out = _add_curly_brackets_around_round_brackets_with_exponent(out)
-    out = _replace_def_by_newcommand(out)
-    out = _add_linebreak_around_begin_end(out)
-    out = _replace_centerline(out)
-    out = _replace_eqnarray(out)
-    out = _put_spec_on_same_line_as_environment(out)
-    out = _put_label_on_same_line_as_environment(out)
-    out = _replace_colon_equal_by_coloneqq(out)
-    out = _remove_space_before_tabular_column_specification(out)
-    out = _add_spaces_around_equality_sign(out)
-    out = _remove_trailing_whitespace(out)
-    out = _remove_multiple_newlines(out)
-    out = _remove_multiple_spaces(out)
-    return out
+    receiver = TexString(string)
+    commands = [
+        RemoveComments(receiver),
+        RemoveTrailingWhitespace(receiver),
+        RemoveMultipleSpaces(receiver),
+        RemoveMultipleNewlines(receiver),
+        RemoveWhitespaceAroundBrackets(receiver),
+        ReplaceDoubleDollarInline(receiver),
+        ReplaceObsoleteTextMods(receiver),
+        AddSpaceAfterSingleSubsuperscript(receiver),
+        ReplaceDots(receiver),
+        ReplacePunctuationOutsideMath(receiver),
+        RemoveWhitespaceBeforePunctuation(receiver),
+        AddNonBreakingSpaceBeforeReference(receiver),
+        ReplaceDoubleNonBreakingSpace(receiver),
+        ReplaceNonBreakingSpace(receiver),
+        ReplaceOver(receiver),
+        AddLineBreakAfterDoubleBackslash(receiver),
+        AddBackslashForKeywords(receiver),
+        AddCurlyBracketsAroundRoundBracketsWithExp(receiver),
+        ReplaceDefWithNewcommand(receiver),
+        AddLineBreakAroundBeginEnd(receiver),
+        ReplaceCenterLine(receiver),
+        ReplaceEqnarray(receiver),
+        PutSpecOnSameLineAsEnvironment(receiver),
+        PutLabelOnSameLineAsEnvironment(receiver),
+        ReplaceColonEqualWithColoneqq(receiver),
+        RemoveSpaceBeforeTabularColumnSpecification(receiver),
+        AddSpaceAroundEqualitySign(receiver),
+    ]
+    [c.execute() for c in commands]
+    return receiver.string
