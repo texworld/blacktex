@@ -42,9 +42,7 @@ def check_command_execution(input_string, expected_string, command):
 class TestAbstract:
     def run_and_compare(self, input_string, expected_string):
         check_command_execution(
-            input_string,
-            expected_string,
-            command=self.command,
+            input_string, expected_string, command=self.command,
         )
 
 

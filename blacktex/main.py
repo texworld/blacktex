@@ -18,21 +18,14 @@ class Command(ABC):
 
     def find_locations(self, pattern):
         p = re.compile(pattern)
-        return [
-            m.start()
-            for m in p.finditer(self.receiver.string)
-        ]
+        return [m.start() for m in p.finditer(self.receiver.string)]
 
 
 class SubstituteMixin:
     @staticmethod
     def regex_sub(string, mapping):
         for match_pattern, replacement_pattern in mapping.items():
-            string = re.sub(
-                match_pattern,
-                replacement_pattern,
-                string,
-            )
+            string = re.sub(match_pattern, replacement_pattern, string,)
         return string
 
     @staticmethod
@@ -57,11 +50,13 @@ class RemoveComments(Command, SubstituteMixin):
         self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
     def _drop_commented_lines(self):
-        self.receiver.string = "".join([
-            line
-            for line in self.receiver.string.splitlines(True)
-            if not self._is_commented_line(line)
-        ])
+        self.receiver.string = "".join(
+            [
+                line
+                for line in self.receiver.string.splitlines(True)
+                if not self._is_commented_line(line)
+            ]
+        )
 
     @staticmethod
     def _is_commented_line(line):
@@ -71,7 +66,7 @@ class RemoveComments(Command, SubstituteMixin):
 class RemoveTrailingWhitespace(Command, SubstituteMixin):
     def execute(self):
         mapping = {
-            r'[ \t]+(\n|\Z)': r'\1',
+            r"[ \t]+(\n|\Z)": r"\1",
         }
         self.receiver.string = self.regex_sub(self.receiver.string, mapping)
 
@@ -111,7 +106,7 @@ class ReplaceDoubleDollarInline(Command, SubstituteMixin):
     def locations(self):
         locations = self.find_locations(r"\$\$")
         if len(locations) % 2 != 0:
-            excerpt = self.receiver.string[locations[0]:20]
+            excerpt = self.receiver.string[locations[0] : 20]
             msg = f"Unmatching number of double dollar signs\n{excerpt}"
             raise ValueError(msg)
         return locations
@@ -124,11 +119,7 @@ class ReplaceDoubleDollarInline(Command, SubstituteMixin):
             replacement_str = self._find_replacement()
             preceding = self.receiver.string[:start_idx].rstrip()
             following = self.receiver.string[end_idx:].lstrip()
-            self.receiver.string = "".join([
-                preceding,
-                replacement_str,
-                following,
-            ])
+            self.receiver.string = "".join([preceding, replacement_str, following,])
 
     def _find_range(self):
         return (self.locations[0], self.locations[1] + 2)
@@ -137,13 +128,7 @@ class ReplaceDoubleDollarInline(Command, SubstituteMixin):
         start_idx = self.locations[0] + 2
         end_idx = self.locations[1]
         inner_content = self.receiver.string[start_idx:end_idx].strip()
-        return "\n".join([
-            "",
-            r"\[",
-            inner_content,
-            r"\]",
-            "",
-        ])
+        return "\n".join(["", r"\[", inner_content, r"\]", "",])
 
 
 class ReplaceObsoleteTextMods(Command, SubstituteMixin):
@@ -236,9 +221,7 @@ class ReplaceOver(Command, SubstituteMixin):
         locations = self.find_locations("\\\\over[^a-z]")
         ranges, replacements = self._find_ranges_and_replacements(locations)
         self.receiver.string = self.substitute_string_ranges(
-            self.receiver.string,
-            ranges,
-            replacements,
+            self.receiver.string, ranges, replacements,
         )
 
     def _find_ranges_and_replacements(self, locations):
@@ -247,8 +230,7 @@ class ReplaceOver(Command, SubstituteMixin):
 
         for loc in locations:
             range_and_frac_pair = self._find_range_and_frac_pair(
-                loc,
-                self.receiver.string,
+                loc, self.receiver.string,
             )
             if range_and_frac_pair:
                 range_, frac_pair = range_and_frac_pair
@@ -257,10 +239,7 @@ class ReplaceOver(Command, SubstituteMixin):
             else:
                 continue
 
-        replacements = [
-            f"\\frac{{{num}}}{{{den}}}"
-            for num, den in frac_values
-        ]
+        replacements = [f"\\frac{{{num}}}{{{den}}}" for num, den in frac_values]
 
         return ranges, replacements
 
@@ -320,9 +299,7 @@ class AddBackslashForKeywords(Command, SubstituteMixin):
     def execute(self):
         ranges, replacements = self._find_ranges_and_replacements()
         self.receiver.string = self.substitute_string_ranges(
-            self.receiver.string,
-            ranges,
-            replacements,
+            self.receiver.string, ranges, replacements,
         )
 
     def _find_ranges_and_replacements(self):
@@ -333,10 +310,7 @@ class AddBackslashForKeywords(Command, SubstituteMixin):
                 if self.receiver.string[loc] != "\\":
                     where_to_insert.append(loc)
 
-        ranges = [
-            (i + 1, i + 1)
-            for i in where_to_insert
-        ]
+        ranges = [(i + 1, i + 1) for i in where_to_insert]
 
         replacements = len(where_to_insert) * ["\\"]
         return ranges, replacements
@@ -347,9 +321,7 @@ class AddCurlyBracketsAroundRoundBracketsWithExp(Command, SubstituteMixin):
         locations = self.find_locations(r"\)\^")
         ranges, replacements = self._find_ranges_and_replacements(locations)
         self.receiver.string = self.substitute_string_ranges(
-            self.receiver.string,
-            ranges,
-            replacements,
+            self.receiver.string, ranges, replacements,
         )
 
     def _find_ranges_and_replacements(self, locations):
@@ -384,9 +356,7 @@ class ReplaceDefWithNewcommand(Command, SubstituteMixin):
     def execute(self):
         ranges, replacements = self._find_ranges_and_replacements()
         self.receiver.string = self.substitute_string_ranges(
-            self.receiver.string,
-            ranges,
-            replacements,
+            self.receiver.string, ranges, replacements,
         )
 
     def _find_ranges_and_replacements(self):
