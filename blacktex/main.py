@@ -20,13 +20,11 @@ class Command(ABC):
         p = re.compile(pattern)
         return [m.start() for m in p.finditer(self.receiver.string)]
 
-
-class SubstituteMixin:
-    @staticmethod
-    def regex_sub(string, mapping):
+    def do_replace(self, mapping):
         for match_pattern, replacement_pattern in mapping.items():
-            string = re.sub(match_pattern, replacement_pattern, string,)
-        return string
+            self.receiver.string = re.sub(
+                match_pattern, replacement_pattern, self.receiver.string,
+            )
 
     @staticmethod
     def substitute_string_ranges(string, ranges, replacements):
@@ -39,7 +37,7 @@ class SubstituteMixin:
         return string
 
 
-class RemoveComments(Command, SubstituteMixin):
+class RemoveComments(Command):
     def execute(self):
         self._drop_commented_lines()
         # https://stackoverflow.com/a/2319116/353337
@@ -47,7 +45,7 @@ class RemoveComments(Command, SubstituteMixin):
             "%.*?\n": "\n",
             "%.*?$": "",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
     def _drop_commented_lines(self):
         self.receiver.string = "".join(
@@ -63,28 +61,28 @@ class RemoveComments(Command, SubstituteMixin):
         return line.lstrip().startswith("%")
 
 
-class RemoveTrailingWhitespace(Command, SubstituteMixin):
+class RemoveTrailingWhitespace(Command):
     def execute(self):
         mapping = {
             r"[ \t]+(\n|\Z)": r"\1",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class RemoveMultipleSpaces(Command, SubstituteMixin):
+class RemoveMultipleSpaces(Command):
     def execute(self):
         """Replace multiple spaces by one, except after a newline."""
         mapping = {"([^\n ])  +": r"\1 "}
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class RemoveMultipleNewlines(Command, SubstituteMixin):
+class RemoveMultipleNewlines(Command):
     def execute(self):
         mapping = {"\n\n\n\n": "\n\n\n"}
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class RemoveWhitespaceAroundBrackets(Command, SubstituteMixin):
+class RemoveWhitespaceAroundBrackets(Command):
     def execute(self):
         mapping = {
             r"{\s+": "{",
@@ -93,10 +91,10 @@ class RemoveWhitespaceAroundBrackets(Command, SubstituteMixin):
             r"\s+\)": ")",
             r"\s+\\right\)": r"\\right)",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceDoubleDollarInline(Command, SubstituteMixin):
+class ReplaceDoubleDollarInline(Command):
     def execute(self):
         """Replace $$...$$ with \\[...\\]."""
         if self.locations:
@@ -131,7 +129,7 @@ class ReplaceDoubleDollarInline(Command, SubstituteMixin):
         return "\n".join(["", r"\[", inner_content, r"\]", ""])
 
 
-class ReplaceObsoleteTextMods(Command, SubstituteMixin):
+class ReplaceObsoleteTextMods(Command):
     def execute(self):
         mapping = {
             r"{\\bf\s+(.*)\}": r"\\textbf{\1}",
@@ -147,27 +145,27 @@ class ReplaceObsoleteTextMods(Command, SubstituteMixin):
             # preferred to \em.
             r"{\\em\s+(.*)\}": r"\\emph{\1}",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class AddSpaceAfterSingleSubsuperscript(Command, SubstituteMixin):
+class AddSpaceAfterSingleSubsuperscript(Command):
     def execute(self):
         mapping = {
             "([_\\^])([^{\\\\])([^_\\^\\s\\$})])": r"\1\2 \3",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceDots(Command, SubstituteMixin):
+class ReplaceDots(Command):
     def execute(self):
         mapping = {
             "\\.\\.\\.": "\\\\dots",
             ",\\\\cdots,": ",\\\\dots,",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplacePunctuationOutsideMath(Command, SubstituteMixin):
+class ReplacePunctuationOutsideMath(Command):
     def execute(self):
         mapping = {
             "\\.\\$": "$.",
@@ -176,10 +174,10 @@ class ReplacePunctuationOutsideMath(Command, SubstituteMixin):
             "!\\$": "$!",
             "\\?\\$": "$?",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class RemoveWhitespaceBeforePunctuation(Command, SubstituteMixin):
+class RemoveWhitespaceBeforePunctuation(Command):
     def execute(self):
         mapping = {
             "\\s+\\.": ".",
@@ -188,35 +186,35 @@ class RemoveWhitespaceBeforePunctuation(Command, SubstituteMixin):
             "\\s+!": "!",
             "\\s+\\?": "?",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class AddNonBreakingSpaceBeforeReference(Command, SubstituteMixin):
+class AddNonBreakingSpaceBeforeReference(Command):
     def execute(self):
         mapping = {
             "\\s+\\\\ref{": "~\\\\ref{",
             "\\s+\\\\eqref{": "~\\\\eqref{",
             "\\s+\\\\cite": "~\\\\cite",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceDoubleNonBreakingSpace(Command, SubstituteMixin):
+class ReplaceDoubleNonBreakingSpace(Command):
     def execute(self):
         mapping = {"~~": "\\\\quad "}
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceNonBreakingSpace(Command, SubstituteMixin):
+class ReplaceNonBreakingSpace(Command):
     def execute(self):
         mapping = {
             "~ ": " ",
             " ~": " ",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceOver(Command, SubstituteMixin):
+class ReplaceOver(Command):
     def execute(self):
         locations = self.find_locations("\\\\over[^a-z]")
         ranges, replacements = self._find_ranges_and_replacements(locations)
@@ -289,13 +287,13 @@ class ReplaceOver(Command, SubstituteMixin):
         return range_, frac_pair
 
 
-class AddLineBreakAfterDoubleBackslash(Command, SubstituteMixin):
+class AddLineBreakAfterDoubleBackslash(Command):
     def execute(self):
         mapping = {r"\\\\([^\n])": r"\\\\\n\1"}
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class AddBackslashForKeywords(Command, SubstituteMixin):
+class AddBackslashForKeywords(Command):
     def execute(self):
         ranges, replacements = self._find_ranges_and_replacements()
         self.receiver.string = self.substitute_string_ranges(
@@ -316,7 +314,7 @@ class AddBackslashForKeywords(Command, SubstituteMixin):
         return ranges, replacements
 
 
-class AddCurlyBracketsAroundRoundBracketsWithExp(Command, SubstituteMixin):
+class AddCurlyBracketsAroundRoundBracketsWithExp(Command):
     def execute(self):
         locations = self.find_locations(r"\)\^")
         ranges, replacements = self._find_ranges_and_replacements(locations)
@@ -352,7 +350,7 @@ class AddCurlyBracketsAroundRoundBracketsWithExp(Command, SubstituteMixin):
         return ranges, replacements
 
 
-class ReplaceDefWithNewcommand(Command, SubstituteMixin):
+class ReplaceDefWithNewcommand(Command):
     def execute(self):
         ranges, replacements = self._find_ranges_and_replacements()
         self.receiver.string = self.substitute_string_ranges(
@@ -374,7 +372,7 @@ class ReplaceDefWithNewcommand(Command, SubstituteMixin):
         return ranges, replacements
 
 
-class AddLineBreakAroundBeginEnd(Command, SubstituteMixin):
+class AddLineBreakAroundBeginEnd(Command):
     def execute(self):
         mapping = {
             r"([^\n ]) *(\\begin{.*?})": r"\1\n\2",
@@ -386,56 +384,56 @@ class AddLineBreakAroundBeginEnd(Command, SubstituteMixin):
             r"([^\n ]) *(\\\])": r"\1\n\2",
             r"(\\\]) *([^\n ])": r"\1\n\2",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceCenterLine(Command, SubstituteMixin):
+class ReplaceCenterLine(Command):
     def execute(self):
         mapping = {r"\\centerline{": r"{\\centering "}
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceEqnarray(Command, SubstituteMixin):
+class ReplaceEqnarray(Command):
     def execute(self):
         mapping = {"eqnarray": "align"}
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class PutSpecOnSameLineAsEnvironment(Command, SubstituteMixin):
+class PutSpecOnSameLineAsEnvironment(Command):
     def execute(self):
         mapping = {
             r"(\\begin{.*?})\s*(\[.*?\])\n": r"\1\2",
             r"(\\begin{.*?})\s*(\[.*?\])([^\n])": r"\1\2\n\3",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class PutLabelOnSameLineAsEnvironment(Command, SubstituteMixin):
+class PutLabelOnSameLineAsEnvironment(Command):
     def execute(self):
         mapping = {
             r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?": r"\1\2\3\4",
             r"(\\section{.*?})\s+(\\label{.*?})(\n)?": r"\1\2\3",
             r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?": r"\1\2\3",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class ReplaceColonEqualWithColoneqq(Command, SubstituteMixin):
+class ReplaceColonEqualWithColoneqq(Command):
     def execute(self):
         mapping = {
             r":\s*=\s*": r"\\coloneqq ",
             r"=\s*:\s*": r"\\eqqcolon ",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class RemoveSpaceBeforeTabularColumnSpecification(Command, SubstituteMixin):
+class RemoveSpaceBeforeTabularColumnSpecification(Command):
     def execute(self):
         mapping = {r"(\\begin{tabular})\s*({.*?})": r"\1\2"}
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
-class AddSpaceAroundEqualitySign(Command, SubstituteMixin):
+class AddSpaceAroundEqualitySign(Command):
     def execute(self):
         mapping = {
             r"([^\s&])=": r"\1 =",
@@ -443,7 +441,7 @@ class AddSpaceAroundEqualitySign(Command, SubstituteMixin):
             r"=([^\s&])": r"= \1",
             r"=&([^\s])": r"=& \1",
         }
-        self.receiver.string = self.regex_sub(self.receiver.string, mapping)
+        self.do_replace(mapping)
 
 
 def clean(string):
