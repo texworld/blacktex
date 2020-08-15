@@ -119,7 +119,7 @@ class ReplaceDoubleDollarInline(Command, SubstituteMixin):
             replacement_str = self._find_replacement()
             preceding = self.receiver.string[:start_idx].rstrip()
             following = self.receiver.string[end_idx:].lstrip()
-            self.receiver.string = "".join([preceding, replacement_str, following,])
+            self.receiver.string = "".join([preceding, replacement_str, following])
 
     def _find_range(self):
         return (self.locations[0], self.locations[1] + 2)
@@ -128,7 +128,7 @@ class ReplaceDoubleDollarInline(Command, SubstituteMixin):
         start_idx = self.locations[0] + 2
         end_idx = self.locations[1]
         inner_content = self.receiver.string[start_idx:end_idx].strip()
-        return "\n".join(["", r"\[", inner_content, r"\]", "",])
+        return "\n".join(["", r"\[", inner_content, r"\]", ""])
 
 
 class ReplaceObsoleteTextMods(Command, SubstituteMixin):
