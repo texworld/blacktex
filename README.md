@@ -3,7 +3,7 @@
   <p align="center">Clean up your LaTeX files.</p>
 </p>
 
-[![CircleCI](https://img.shields.io/circleci/project/github/nschloe/blacktex/master.svg?style=flat-square)](https://circleci.com/gh/nschloe/blacktex/tree/master)
+[![gh-actions](https://img.shields.io/github/workflow/status/nschloe/blacktex/ci?style=flat-square)](https://github.com/nschloe/blacktex/actions?query=workflow%3Aci)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/blacktex.svg?style=flat-square)](https://codecov.io/gh/nschloe/blacktex)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/blacktex.svg?style=flat-square)](https://pypi.org/pypi/blacktex/)
