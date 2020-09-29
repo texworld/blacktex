@@ -22,8 +22,7 @@ def _remove_trailing_whitespace(string):
 
 
 def _remove_multiple_spaces(string):
-    """Replaces multiple spaces by one, except after a newline.
-    """
+    """Replaces multiple spaces by one, except after a newline."""
     return re.sub("([^\n ])  +", r"\1 ", string)
 
 
@@ -42,8 +41,7 @@ def _remove_whitespace_around_brackets(string):
 
 
 def _replace_dollar_dollar(string):
-    """Replace $$...$$ by \\[...\\].
-    """
+    """Replace $$...$$ by \\[...\\]."""
     p = re.compile("\\$\\$")
     locations = [m.start() for m in p.finditer(string)]
     assert len(locations) % 2 == 0
