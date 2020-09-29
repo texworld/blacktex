@@ -47,6 +47,13 @@ def test_multiple_comment_lines():
     assert out == "A\nB"
 
 
+def test_comment_last():
+    input_string = "somemacro{%\n" "foobar% \n" "}"
+    out = blacktex.clean(input_string)
+    ref = "somemacro{%\nfoobar%\n}"
+    assert out == ref, f"{repr(out)} != {repr(ref)}"
+
+
 def test_trailing_whitespace():
     input_string = "lorem    \n sit amet"
     out = blacktex.clean(input_string)
@@ -81,7 +88,7 @@ def test_spaces_with_brackets():
 
 
 def test_multiple_newlines():
-    input_string = "lorem  \n\n\n\n ipsum dolor sit  amet"
+    input_string = "lorem  \n\n\n\n\n\n ipsum dolor sit  amet"
     out = blacktex.clean(input_string)
     assert out == "lorem\n\n\n ipsum dolor sit amet"
 
@@ -95,7 +102,7 @@ def test_dollar_dollar():
 def test_whitespace_after_curly():
     input_string = "\\textit{ \nlorem  \n\n\n ipsum dolor sit  amet}"
     out = blacktex.clean(input_string)
-    assert out == "\\textit{lorem\n\n\n ipsum dolor sit amet}"
+    assert out == "\\textit{\nlorem\n\n\n ipsum dolor sit amet}"
 
 
 def test_subsuperscript_space():
@@ -318,4 +325,4 @@ def test_space_around_operators():
 
 
 if __name__ == "__main__":
-    test_linebreak_after_double_backslash()
+    test_comment_last()
