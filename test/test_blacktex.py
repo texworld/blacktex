@@ -47,6 +47,20 @@ def test_multiple_comment_lines():
     assert out == "A\nB"
 
 
+# def test_comment_last():
+#     input_string = (
+#         "somemacro{%\n"
+#         "foobar% \n"
+#         "}"
+#     )
+#     out = blacktex.clean(input_string)
+#     assert out == (
+#         "somemacro{%\n"
+#         "foobar%\n"
+#         "}"
+#     )
+
+
 def test_trailing_whitespace():
     input_string = "lorem    \n sit amet"
     out = blacktex.clean(input_string)
@@ -81,7 +95,7 @@ def test_spaces_with_brackets():
 
 
 def test_multiple_newlines():
-    input_string = "lorem  \n\n\n\n ipsum dolor sit  amet"
+    input_string = "lorem  \n\n\n\n\n\n ipsum dolor sit  amet"
     out = blacktex.clean(input_string)
     assert out == "lorem\n\n\n ipsum dolor sit amet"
 

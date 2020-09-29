@@ -3,6 +3,10 @@ import warnings
 
 
 def _remove_comments(string):
+    """Remove comments unless the comment character is the last non-whitespace character
+    in a line. (This is often used in macros etc.)
+    """
+    # first remove all lines which are comments only
     comment_lines = []
     lines = string.split("\n")
     for k, line in enumerate(lines):
@@ -12,8 +16,8 @@ def _remove_comments(string):
     string = "\n".join([lines[k] for k in range(len(lines)) if k not in comment_lines])
 
     # https://stackoverflow.com/a/2319116/353337
-    string = re.sub("%.*?\n", "\n", string)
-    string = re.sub("%.*?$", "", string)
+    string = re.sub("[ \t]*%.+\n", "\n", string)
+    string = re.sub("[ \t]*%.+$", "", string)
     return string
 
 
@@ -27,7 +31,7 @@ def _remove_multiple_spaces(string):
 
 
 def _remove_multiple_newlines(string):
-    string = re.sub("\n\n\n\n", "\n\n\n", string)
+    string = re.sub("\n\n\n\n+", "\n\n\n", string)
     return string
 
 
@@ -304,6 +308,7 @@ def _add_spaces_around_equality_sign(string):
 
 def clean(string):
     out = string
+    out = _remove_trailing_whitespace(out)
     out = _remove_comments(out)
     out = _replace_dollar_dollar(out)
     out = _replace_obsolete_text_mods(out)
@@ -328,7 +333,6 @@ def clean(string):
     out = _replace_colon_equal_by_coloneqq(out)
     out = _remove_space_before_tabular_column_specification(out)
     out = _add_spaces_around_equality_sign(out)
-    out = _remove_trailing_whitespace(out)
     out = _remove_multiple_newlines(out)
     out = _remove_multiple_spaces(out)
     return out
