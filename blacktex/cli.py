@@ -10,7 +10,6 @@ def main(argv=None):
 
     out = blacktex.clean(args.infile.read())
     args.outfile.write(out)
-    return
 
 
 def _get_parser():

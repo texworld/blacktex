@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
         python-version: "3.x"
     - uses: actions/checkout@v2
@@ -25,7 +25,7 @@ jobs:
       matrix:
         python-version: [3.6, 3.7, 3.8]
     steps:
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
         python-version: "3.x"
     - uses: actions/checkout@v2
@@ -36,5 +36,6 @@ jobs:
       run: |
         pip install pytest pytest-cov
         cd test/ && pytest -W error::UserWarning --cov blacktex
-    # - name: Submit to codecov
-    #   run: bash <(curl -s https://codecov.io/bash)
+    - name: Submit to codecov
+      if: ${{ matrix.python-version == '3.8' }}
+      run: bash <(curl -s https://codecov.io/bash)
