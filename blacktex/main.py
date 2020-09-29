@@ -17,6 +17,7 @@ def _remove_comments(string):
 
     # https://stackoverflow.com/a/2319116/353337
     string = re.sub("[ \t]*%.+\n", "\n", string)
+    # same with EOF
     string = re.sub("[ \t]*%.+$", "", string)
     return string
 
@@ -36,11 +37,11 @@ def _remove_multiple_newlines(string):
 
 
 def _remove_whitespace_around_brackets(string):
-    string = re.sub("{\\s+", "{", string)
-    string = re.sub("\\s+}", "}", string)
-    string = re.sub("\\(\\s+", "(", string)
-    string = re.sub("\\s+\\)", ")", string)
-    string = re.sub("\\s+\\\\right\\)", "\\\\right)", string)
+    string = re.sub("{[ \t]+", "{", string)
+    string = re.sub("[ \t]+}", "}", string)
+    string = re.sub("\\([ \t]+", "(", string)
+    string = re.sub("[ \t]+\\)", ")", string)
+    string = re.sub("[ \t]+\\\\right\\)", "\\\\right)", string)
     return string
 
 
