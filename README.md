@@ -35,6 +35,12 @@ a+b = c
 (\textit{Pythogoras}),
 and $y = 2^n g$ with $n = 1,\dots,10$, we have $\frac{\Gamma}{2} = 8$.
 ```
+You can use
+```
+blacktex -i in.tex
+```
+to modify a file in-place.
+
 
 ### Installation
 

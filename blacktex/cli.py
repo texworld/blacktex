@@ -9,7 +9,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     out = blacktex.clean(args.infile.read())
-    args.outfile.write(out)
+
+    if args.in_place:
+        with open(args.infile.name, "w") as f:
+            f.write(out)
+    else:
+        args.outfile.write(out)
 
 
 def _get_parser():
@@ -29,6 +34,10 @@ def _get_parser():
         type=argparse.FileType("w"),
         default=sys.stdout,
         help="output LaTeX file (default: stdout)",
+    )
+
+    parser.add_argument(
+        "-i", "--in-place", action="store_true", help="modify infile in place"
     )
 
     version_text = "blacktex {}, Python {}.{}.{}".format(
