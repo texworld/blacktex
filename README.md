@@ -4,7 +4,6 @@
 </p>
 
 [![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg?style=flat-square)](https://pypi.org/project/blacktex)
-[![Packaging status](https://repology.org/badge/tiny-repos/python:blacktex.svg)](https://repology.org/project/python:blacktex/versions)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/blacktex.svg?style=flat-square)](https://pypi.org/pypi/blacktex/)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/blacktex)
 [![PyPi downloads](https://img.shields.io/pypi/dm/blacktex.svg?style=flat-square)](https://pypistats.org/packages/blacktex)
@@ -44,13 +43,6 @@ blacktex is [available from the Python Package Index](https://pypi.python.org/py
 pip install -U blacktex
 ```
 you can install/upgrade.
-
-### Testing
-
-To run the tests, simply check out this repository and run
-```
-pytest
-```
 
 ### License
 This software is published under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
