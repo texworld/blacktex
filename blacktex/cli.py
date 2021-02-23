@@ -40,6 +40,10 @@ def _get_parser():
         "-i", "--in-place", action="store_true", help="modify infile in place"
     )
 
+    parser.add_argument(
+        "-k", "--keep-comments", action="store_true", help="keep comments"
+    )
+
     version_text = "blacktex {}, Python {}.{}.{}".format(
         blacktex.__version__,
         sys.version_info.major,
