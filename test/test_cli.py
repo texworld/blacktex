@@ -12,7 +12,7 @@ def test_cli():
 
     blacktex.cli.main([infile, outfile])
 
-    with open(outfile, "r") as f:
+    with open(outfile) as f:
         line = f.read()
         assert line == "a+b = c"
 
