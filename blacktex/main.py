@@ -16,9 +16,10 @@ def _remove_comments(string):
     string = "\n".join([lines[k] for k in range(len(lines)) if k not in comment_lines])
 
     # https://stackoverflow.com/a/2319116/353337
-    string = re.sub("[ \t]*%.+\n", "\n", string)
+    # https://stackoverflow.com/a/24209736/353337
+    string = re.sub("[ \t]*(?<!\\\\)%.+\n", "\n", string)
     # same with EOF
-    string = re.sub("[ \t]*%.+$", "", string)
+    string = re.sub("[ \t]*(?<!\\\\)%.+$", "", string)
     return string
 
 
