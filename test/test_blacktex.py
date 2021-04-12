@@ -40,6 +40,10 @@ def test_comments():
     out = blacktex.clean(input_string)
     assert out == "A\n sit amet"
 
+    input_string = "{equation}%comment"
+    out = blacktex.clean(input_string)
+    assert out == "{equation}"
+
 
 def test_multiple_comment_lines():
     input_string = "A\n%\n%\nB"
@@ -52,6 +56,12 @@ def test_comment_last():
     out = blacktex.clean(input_string)
     ref = "somemacro{%\nfoobar%\n}"
     assert out == ref, f"{repr(out)} != {repr(ref)}"
+
+
+def test_escapted_percentage_sign():
+    input_string = "25\\% gain"
+    out = blacktex.clean(input_string)
+    assert out == "25\\% gain"
 
 
 def test_trailing_whitespace():
