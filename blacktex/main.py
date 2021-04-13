@@ -308,6 +308,12 @@ def _add_spaces_around_equality_sign(string):
     return string
 
 
+def _si_percentage(string):
+    # match float like https://stackoverflow.com/a/12643073/353337
+    string = re.sub(r"([+-]?([0-9]*[.])?[0-9]+)[ \t]*\\%", r"\\SI{\1}{\%}", string)
+    return string
+
+
 def clean(string, keep_comments=False):
     out = string
     out = _remove_trailing_whitespace(out)
@@ -324,6 +330,7 @@ def clean(string, keep_comments=False):
     out = _replace_double_nbsp(out)
     out = _replace_nbsp_space(out)
     out = _replace_over(out)
+    out = _si_percentage(out)
     out = _add_linebreak_after_double_backslash(out)
     out = _add_backslash_for_keywords(out)
     out = _add_curly_brackets_around_round_brackets_with_exponent(out)
