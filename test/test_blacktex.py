@@ -58,12 +58,6 @@ def test_comment_last():
     assert out == ref, f"{repr(out)} != {repr(ref)}"
 
 
-def test_escapted_percentage_sign():
-    input_string = "25\\% gain"
-    out = blacktex.clean(input_string)
-    assert out == "25\\% gain"
-
-
 def test_trailing_whitespace():
     input_string = "lorem    \n sit amet"
     out = blacktex.clean(input_string)
@@ -334,5 +328,17 @@ def test_space_around_operators():
     assert out == "a+b &=& c"
 
 
+def test_si_percentage():
+    input_string = "20\\% \\SI{30}{\\%}"
+    out = blacktex.clean(input_string)
+    assert out == "\\SI{20}{\\%} \\SI{30}{\\%}"
+
+
+def test_escaped_percentage_sign():
+    input_string = "25\\% gain"
+    out = blacktex.clean(input_string)
+    assert out == "\\SI{25}{\\%} gain"
+
+
 if __name__ == "__main__":
-    test_comment_last()
+    test_si_percentage()
