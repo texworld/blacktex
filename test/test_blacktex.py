@@ -114,10 +114,6 @@ def test_subsuperscript_space():
     out = blacktex.clean(input_string)
     assert out == "2^n g"
 
-    input_string = "2_ng"
-    out = blacktex.clean(input_string)
-    assert out == "2_n g"
-
     input_string = "$1/n^3$."
     out = blacktex.clean(input_string)
     assert out == "$1/n^3$."
@@ -136,11 +132,12 @@ def test_subsuperscript_space():
 
     input_string = "a^2_PP^2"
     out = blacktex.clean(input_string)
-    assert out == "a^2_P P^2"
+    assert out == "a^2_PP^2"
 
-    input_string = "a_2^PP_2"
+    # Underscore separation just produces too many false positives. Leave as is.
+    input_string = "2_ng"
     out = blacktex.clean(input_string)
-    assert out == "a_2^P P_2"
+    assert out == "2_ng"
 
 
 def test_triple_dots():
