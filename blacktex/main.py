@@ -333,13 +333,14 @@ def _si_percentage(string):
     return string
 
 
-def clean(string, keep_comments=False):
+def clean(string, keep_comments=False, keep_dollar=False):
     out = string
     out = _remove_trailing_whitespace(out)
     if not keep_comments:
         out = _remove_comments(out)
     out = _replace_dollar_dollar(out)
-    out = _replace_dollar(out)
+    if not keep_dollar:
+        out = _replace_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_subsuperscript(out)
