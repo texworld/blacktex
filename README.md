@@ -41,7 +41,6 @@ blacktex -i in.tex
 ```
 to modify a file in-place. See `blacktex -h` for all options.
 
-
 ### Installation
 
 blacktex is [available from the Python Package Index](https://pypi.python.org/pypi/blacktex/), so with
