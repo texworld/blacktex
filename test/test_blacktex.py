@@ -6,17 +6,14 @@ import blacktex
 def test_dollar():
     input_string = "a $a + b = c$ b"
     out = blacktex.clean(input_string)
-    print(out)
     assert out == r"a \(a + b = c\) b"
 
     input_string = r"a \$a + b = c\$ b"
     out = blacktex.clean(input_string)
-    print(out)
     assert out == r"a \$a + b = c\$ b"
 
     input_string = r"a \\$a + b = c\\$ b"
     out = blacktex.clean(input_string)
-    print(f"{out = }")
     assert out == "a \\\\\n\\(a + b = c\\\\\n\\) b"
 
 
