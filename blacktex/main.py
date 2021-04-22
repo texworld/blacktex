@@ -64,7 +64,7 @@ def _replace_dollar_dollar(string):
 
 
 def _replace_dollar(string):
-    """Replace $...$ by \\(...\\)."""
+    """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
     # (?<!\\\\) checks there is no backslash before (negative lookbehind)
     # (?:\\\\{2})* matches all even numbers of backslashes
     p = re.compile("(?<!\\\\)(?:\\\\{2})*\\$")
