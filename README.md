@@ -33,13 +33,13 @@ Because of
 a+b = c
 \]
 (\textit{Pythogoras}),
-and $y = 2^n g$ with $n = 1,\dots,10$, we have $\frac{\Gamma}{2} = 8$.
+and \(y = 2^n g\) with \(n = 1,\dots,10\), we have \(\frac{\Gamma}{2} = 8.\)
 ```
 You can use
 ```
 blacktex -i in.tex
 ```
-to modify a file in-place.
+to modify a file in-place. See `blacktex -h` for all options.
 
 
 ### Installation
