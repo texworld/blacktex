@@ -265,9 +265,7 @@ def _replace_def_by_newcommand(string):
     replacements = []
     for m in p.finditer(string):
         ranges.append((m.start(), m.end()))
-        replacements.append(
-            f"\\newcommand{{{string[m.start() + 4 : m.end()]}}}"
-        )
+        replacements.append(f"\\newcommand{{{string[m.start() + 4 : m.end()]}}}")
 
     return _substitute_string_ranges(string, ranges, replacements)
 
