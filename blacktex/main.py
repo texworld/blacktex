@@ -63,6 +63,25 @@ def _replace_dollar_dollar(string):
     return _substitute_string_ranges(string, ranges, replacements)
 
 
+def _replace_dollar(string):
+    """Replace $...$ by \\(...\\)."""
+    # (?<!\\\\) checks there is no backslash before (negative lookbehind)
+    # (?:\\\\{2})* matches all even numbers of backslashes
+    p = re.compile("(?<!\\\\)(?:\\\\{2})*\\$")
+    locations = [m.end() for m in p.finditer(string)]
+    assert len(locations) % 2 == 0
+
+    k = 0
+    ranges = []
+    replacements = []
+    while k < len(locations):
+        ranges.append((locations[k] - 1, locations[k + 1]))
+        replacements.append("\\(" + string[locations[k] : locations[k + 1] - 1] + "\\)")
+        k += 2
+
+    return _substitute_string_ranges(string, ranges, replacements)
+
+
 def _replace_obsolete_text_mods(string):
     string = string.replace("{\\bf ", "\\textbf{")
     string = string.replace("{\\it ", "\\textit{")
@@ -320,6 +339,7 @@ def clean(string, keep_comments=False):
     if not keep_comments:
         out = _remove_comments(out)
     out = _replace_dollar_dollar(out)
+    out = _replace_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_subsuperscript(out)
