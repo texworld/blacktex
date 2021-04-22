@@ -338,6 +338,7 @@ def clean(string, keep_comments=False, keep_dollar=False):
     out = _remove_trailing_whitespace(out)
     if not keep_comments:
         out = _remove_comments(out)
+    out = _replace_punctuation_outside_math(out)
     out = _replace_dollar_dollar(out)
     if not keep_dollar:
         out = _replace_dollar(out)
@@ -345,7 +346,6 @@ def clean(string, keep_comments=False, keep_dollar=False):
     out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_subsuperscript(out)
     out = _replace_dots(out)
-    out = _replace_punctuation_outside_math(out)
     out = _remove_whitespace_before_punctuation(out)
     out = _add_nbsp_before_reference(out)
     out = _replace_double_nbsp(out)
