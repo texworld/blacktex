@@ -8,7 +8,7 @@ def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
 
-    out = blacktex.clean(args.infile.read())
+    out = blacktex.clean(args.infile.read(), args.keep_comments, args.keep_dollar_math)
 
     if args.in_place:
         with open(args.infile.name, "w") as f:
@@ -41,7 +41,14 @@ def _get_parser():
     )
 
     parser.add_argument(
-        "-k", "--keep-comments", action="store_true", help="keep comments"
+        "-c", "--keep-comments", action="store_true", help="keep comments"
+    )
+
+    parser.add_argument(
+        "-d",
+        "--keep-dollar-math",
+        action="store_true",
+        help="keep inline math with $...$",
     )
 
     version_text = "blacktex {}, Python {}.{}.{}".format(

@@ -3,6 +3,20 @@ import pytest
 import blacktex
 
 
+def test_dollar():
+    input_string = "a $a + b = c$ b"
+    out = blacktex.clean(input_string)
+    assert out == r"a \(a + b = c\) b"
+
+    input_string = r"a \$a + b = c\$ b"
+    out = blacktex.clean(input_string)
+    assert out == r"a \$a + b = c\$ b"
+
+    input_string = r"a \\$a + b = c\\$ b"
+    out = blacktex.clean(input_string)
+    assert out == "a \\\\\n\\(a + b = c\\\\\n\\) b"
+
+
 def test_readme():
     input_string = (
         "Because   of $$a+b=c$$ ({\\it Pythogoras}),\n"
@@ -17,7 +31,8 @@ def test_readme():
         "a+b = c\n"
         "\\]\n"
         "(\\textit{Pythogoras}),\n"
-        "and $y = 2^n g$ with $n = 1,\\dots,10$, we have $\\frac{\\Gamma}{2} = 8$."
+        "and \\(y = 2^n g\\) with \\(n = 1,\\dots,10\\), we have "
+        "\\(\\frac{\\Gamma}{2} = 8\\)."
     )
 
 
@@ -114,17 +129,17 @@ def test_subsuperscript_space():
     out = blacktex.clean(input_string)
     assert out == "2^n g"
 
-    input_string = "$1/n^3$."
+    input_string = "1/n^3"
     out = blacktex.clean(input_string)
-    assert out == "$1/n^3$."
+    assert out == "1/n^3"
 
-    input_string = "${n^3}$."
+    input_string = "n^3"
     out = blacktex.clean(input_string)
-    assert out == "${n^3}$."
+    assert out == "n^3"
 
-    input_string = "$(n^3)$."
+    input_string = "(n^3)"
     out = blacktex.clean(input_string)
-    assert out == "$(n^3)$."
+    assert out == "(n^3)"
 
     input_string = "n^\\alpha"
     out = blacktex.clean(input_string)
@@ -154,7 +169,7 @@ def test_cdots():
 
 def test_punctuation_outside_math():
     input_string = "$a+b.$"
-    out = blacktex.clean(input_string)
+    out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "$a+b$."
 
 
@@ -178,14 +193,14 @@ def test_double_nbsp():
 
 def test_over_frac():
     input_string = "Some ${2\\over 3^{4+x}}$ equation ${\\pi \\over4}$."
-    out = blacktex.clean(input_string)
+    out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "Some $\\frac{2}{3^{4+x}}$ equation $\\frac{\\pi}{4}$."
 
 
 def test_over_frac_warn():
     input_string = "Some $2\\over 3^{4+x}$."
     with pytest.warns(UserWarning):
-        out = blacktex.clean(input_string)
+        out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "Some $2\\over 3^{4+x}$."
 
 
@@ -197,7 +212,7 @@ def test_overline_warn():
 
 def test_linebreak_after_double_backslash():
     input_string = "Some $2\\\\3 4\\\\\n6\\\\[2mm]7$."
-    out = blacktex.clean(input_string)
+    out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "Some $2\\\\\n3 4\\\\\n6\\\\\n[2mm]7$."
 
 
@@ -209,13 +224,13 @@ def test_nbsp_space():
 
 def test_keywords_without_backslash():
     input_string = "maximum and logarithm $max_x log(x)$"
-    out = blacktex.clean(input_string)
+    out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "maximum and logarithm $\\max_x \\log(x)$"
 
 
 def test_curly_around_round_with_exponent():
     input_string = "$(a+b)^n \\left(a+b\\right)^{n+1}$"
-    out = blacktex.clean(input_string)
+    out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "${(a+b)}^n {\\left(a+b\\right)}^{n+1}$"
 
 
@@ -338,4 +353,4 @@ def test_escaped_percentage_sign():
 
 
 if __name__ == "__main__":
-    test_si_percentage()
+    test_dollar()

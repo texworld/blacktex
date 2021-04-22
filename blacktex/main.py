@@ -63,6 +63,25 @@ def _replace_dollar_dollar(string):
     return _substitute_string_ranges(string, ranges, replacements)
 
 
+def _replace_dollar(string):
+    """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
+    # (?<!\\\\) checks there is no backslash before (negative lookbehind)
+    # (?:\\\\{2})* matches all even numbers of backslashes
+    p = re.compile("(?<!\\\\)(?:\\\\{2})*\\$")
+    locations = [m.end() for m in p.finditer(string)]
+    assert len(locations) % 2 == 0
+
+    k = 0
+    ranges = []
+    replacements = []
+    while k < len(locations):
+        ranges.append((locations[k] - 1, locations[k + 1]))
+        replacements.append("\\(" + string[locations[k] : locations[k + 1] - 1] + "\\)")
+        k += 2
+
+    return _substitute_string_ranges(string, ranges, replacements)
+
+
 def _replace_obsolete_text_mods(string):
     string = string.replace("{\\bf ", "\\textbf{")
     string = string.replace("{\\it ", "\\textit{")
@@ -246,9 +265,7 @@ def _replace_def_by_newcommand(string):
     replacements = []
     for m in p.finditer(string):
         ranges.append((m.start(), m.end()))
-        replacements.append(
-            "\\newcommand{{{}}}".format(string[m.start() + 4 : m.end()])
-        )
+        replacements.append(f"\\newcommand{{{string[m.start() + 4 : m.end()]}}}")
 
     return _substitute_string_ranges(string, ranges, replacements)
 
@@ -314,17 +331,19 @@ def _si_percentage(string):
     return string
 
 
-def clean(string, keep_comments=False):
+def clean(string, keep_comments=False, keep_dollar=False):
     out = string
     out = _remove_trailing_whitespace(out)
     if not keep_comments:
         out = _remove_comments(out)
+    out = _replace_punctuation_outside_math(out)
     out = _replace_dollar_dollar(out)
+    if not keep_dollar:
+        out = _replace_dollar(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_subsuperscript(out)
     out = _replace_dots(out)
-    out = _replace_punctuation_outside_math(out)
     out = _remove_whitespace_before_punctuation(out)
     out = _add_nbsp_before_reference(out)
     out = _replace_double_nbsp(out)
