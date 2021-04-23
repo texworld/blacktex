@@ -48,7 +48,7 @@ def _remove_whitespace_around_brackets(string):
 
 def _replace_dollar_dollar(string):
     """Replace $$...$$ by \\[...\\]."""
-    p = re.compile("\\$\\$")
+    p = re.compile(r"\$\$")
     locations = [m.start() for m in p.finditer(string)]
     assert len(locations) % 2 == 0
 
@@ -67,7 +67,7 @@ def _replace_dollar(string):
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
     # (?<!\\\\) checks there is no backslash before (negative lookbehind)
     # (?:\\\\{2})* matches all even numbers of backslashes
-    p = re.compile("(?<!\\\\)(?:\\\\{2})*\\$")
+    p = re.compile(r"(?<!\\)(?:\\{2})*\$")
     locations = [m.end() for m in p.finditer(string)]
     assert len(locations) % 2 == 0
 
@@ -98,43 +98,43 @@ def _replace_obsolete_text_mods(string):
 
 
 def _add_space_after_single_subsuperscript(string):
-    string = re.sub("([\\^])([^{\\\\])([^_\\^\\s\\$})])", r"\1\2 \3", string)
+    string = re.sub(r"([\^])([^{\\])([^_\^\s\$})])", r"\1\2 \3", string)
     return string
 
 
 def _replace_dots(string):
-    string = re.sub("\\.\\.\\.", "\\\\dots", string)
-    string = re.sub(",\\\\cdots,", ",\\\\dots,", string)
+    string = re.sub(r"\.\.\.", r"\\dots", string)
+    string = re.sub(r",\\cdots,", r",\\dots,", string)
     return string
 
 
 def _replace_punctuation_outside_math(string):
-    string = re.sub("\\.\\$", "$.", string)
-    string = re.sub(",\\$", "$,", string)
-    string = re.sub(";\\$", "$;", string)
-    string = re.sub("!\\$", "$!", string)
-    string = re.sub("\\?\\$", "$?", string)
+    string = re.sub(r"\.\$", "$.", string)
+    string = re.sub(r",\$", "$,", string)
+    string = re.sub(r";\$", "$;", string)
+    string = re.sub(r"!\$", "$!", string)
+    string = re.sub(r"\?\$", "$?", string)
     return string
 
 
 def _remove_whitespace_before_punctuation(string):
-    string = re.sub("\\s+\\.", ".", string)
-    string = re.sub("\\s+,", ",", string)
-    string = re.sub("\\s+;", ";", string)
-    string = re.sub("\\s+!", "!", string)
-    string = re.sub("\\s+\\?", "?", string)
+    string = re.sub(r"\s+\.", ".", string)
+    string = re.sub(r"\s+,", ",", string)
+    string = re.sub(r"\s+;", ";", string)
+    string = re.sub(r"\s+!", "!", string)
+    string = re.sub(r"\s+\?", "?", string)
     return string
 
 
 def _add_nbsp_before_reference(string):
-    string = re.sub("\\s+\\\\ref{", "~\\\\ref{", string)
-    string = re.sub("\\s+\\\\eqref{", "~\\\\eqref{", string)
-    string = re.sub("\\s+\\\\cite", "~\\\\cite", string)
+    string = re.sub(r"\s+\\ref{", r"~\\ref{", string)
+    string = re.sub(r"\s+\\eqref{", r"~\\eqref{", string)
+    string = re.sub(r"\s+\\cite", r"~\\cite", string)
     return string
 
 
 def _replace_double_nbsp(string):
-    string = re.sub("~~", "\\\\quad ", string)
+    string = re.sub("~~", r"\\quad ", string)
     return string
 
 
@@ -155,7 +155,7 @@ def _substitute_string_ranges(string, ranges, replacements):
 
 
 def _replace_over(string):
-    p = re.compile("\\\\over[^a-z]")
+    p = re.compile(r"\\over[^a-z]")
     locations = [m.start() for m in p.finditer(string)]
 
     fracs = []
