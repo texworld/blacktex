@@ -3,20 +3,6 @@ import pytest
 import blacktex
 
 
-def test_dollar():
-    input_string = "a $a + b = c$ b"
-    out = blacktex.clean(input_string)
-    assert out == r"a \(a + b = c\) b"
-
-    input_string = r"a \$a + b = c\$ b"
-    out = blacktex.clean(input_string)
-    assert out == r"a \$a + b = c\$ b"
-
-    input_string = r"a \\$a + b = c\\$ b"
-    out = blacktex.clean(input_string)
-    assert out == "a \\\\\n\\(a + b = c\\\\\n\\) b"
-
-
 def test_readme():
     input_string = (
         "Because   of $$a+b=c$$ ({\\it Pythogoras}),\n"
@@ -36,165 +22,131 @@ def test_readme():
     )
 
 
-def test_text_mods():
-    input_string = "{\\em it's me!}"
-    out = blacktex.clean(input_string)
-    assert out == "\\emph{it's me!}"
-
-
-def test_comments():
-    input_string = "lorem  %some comment  \n %sit amet"
-    out = blacktex.clean(input_string)
-    assert out == "lorem"
-
-    input_string = "% lorem some comment  \n sit amet"
-    out = blacktex.clean(input_string)
-    assert out == " sit amet"
-
-    input_string = "A % lorem some comment  \n sit amet"
-    out = blacktex.clean(input_string)
-    assert out == "A\n sit amet"
-
-    input_string = "{equation}%comment"
-    out = blacktex.clean(input_string)
-    assert out == "{equation}"
-
-
-def test_multiple_comment_lines():
-    input_string = "A\n%\n%\nB"
-    out = blacktex.clean(input_string)
-    assert out == "A\nB"
-
-
-def test_comment_last():
-    input_string = "somemacro{%\n" "foobar% \n" "}"
-    out = blacktex.clean(input_string)
-    ref = "somemacro{%\nfoobar%\n}"
-    assert out == ref, f"{repr(out)} != {repr(ref)}"
-
-
-def test_trailing_whitespace():
-    input_string = "lorem    \n sit amet"
-    out = blacktex.clean(input_string)
-    assert out == "lorem\n sit amet"
-
-
-def test_obsolete_text_mod():
-    input_string = "lorem {\\it ipsum dolor} sit amet"
-    out = blacktex.clean(input_string)
-    assert out == "lorem \\textit{ipsum dolor} sit amet"
-
-
-def test_multiple_spaces():
-    input_string = "lorem   ipsum dolor sit  amet"
-    out = blacktex.clean(input_string)
-    assert out == "lorem ipsum dolor sit amet"
-
-    # It's allowed as indentation at the beginning of lines
-    input_string = "a\n    b\nc"
-    out = blacktex.clean(input_string)
-    assert out == "a\n    b\nc"
-
-    input_string = "\\[\n  S(T)\\leq S(P_n).\n\\]\n"
-    out = blacktex.clean(input_string)
-    assert out == "\\[\n  S(T)\\leq S(P_n).\n\\]\n"
-
-
-def test_spaces_with_brackets():
-    input_string = "( 1+2 ) { 3+4 } \\left( 5+6 \\right)"
-    out = blacktex.clean(input_string)
-    assert out == "(1+2) {3+4} \\left(5+6\\right)"
-
-
-def test_multiple_newlines():
-    input_string = "lorem  \n\n\n\n\n\n ipsum dolor sit  amet"
-    out = blacktex.clean(input_string)
-    assert out == "lorem\n\n\n ipsum dolor sit amet"
-
-
-def test_dollar_dollar():
-    input_string = "a $$a + b = c$$ b"
-    out = blacktex.clean(input_string)
-    assert out == "a\n\\[\na + b = c\n\\]\nb"
-
-
-def test_whitespace_after_curly():
-    input_string = "\\textit{ \nlorem  \n\n\n ipsum dolor sit  amet}"
-    out = blacktex.clean(input_string)
-    assert out == "\\textit{\nlorem\n\n\n ipsum dolor sit amet}"
-
-
-def test_subsuperscript_space():
-    input_string = "2^ng"
-    out = blacktex.clean(input_string)
-    assert out == "2^n g"
-
-    input_string = "1/n^3"
-    out = blacktex.clean(input_string)
-    assert out == "1/n^3"
-
-    input_string = "n^3"
-    out = blacktex.clean(input_string)
-    assert out == "n^3"
-
-    input_string = "(n^3)"
-    out = blacktex.clean(input_string)
-    assert out == "(n^3)"
-
-    input_string = "n^\\alpha"
-    out = blacktex.clean(input_string)
-    assert out == "n^\\alpha"
-
-    input_string = "a^2_PP^2"
-    out = blacktex.clean(input_string)
-    assert out == "a^2_PP^2"
-
-    # Underscore separation just produces too many false positives. Leave as is.
-    input_string = "2_ng"
-    out = blacktex.clean(input_string)
-    assert out == "2_ng"
-
-
-def test_triple_dots():
-    input_string = "a,...,b"
-    out = blacktex.clean(input_string)
-    assert out == "a,\\dots,b"
-
-
-def test_cdots():
-    input_string = "a,\\cdots,b"
-    out = blacktex.clean(input_string)
-    assert out == "a,\\dots,b"
-
-
-def test_punctuation_outside_math():
-    input_string = "$a+b.$"
-    out = blacktex.clean(input_string, keep_dollar=True)
-    assert out == "$a+b$."
-
-
-def test_whitespace_before_punctuation():
-    input_string = "Some text ."
-    out = blacktex.clean(input_string)
-    assert out == "Some text."
-
-
-def test_nbsp_before_ref():
-    input_string = "Some text \\ref{something}."
-    out = blacktex.clean(input_string)
-    assert out == "Some text~\\ref{something}."
-
-
-def test_double_nbsp():
-    input_string = "Some~~text."
-    out = blacktex.clean(input_string)
-    assert out == "Some\\quad text."
-
-
-def test_over_frac():
-    input_string = "Some ${2\\over 3^{4+x}}$ equation ${\\pi \\over4}$."
-    out = blacktex.clean(input_string, keep_dollar=True)
-    assert out == "Some $\\frac{2}{3^{4+x}}$ equation $\\frac{\\pi}{4}$."
+@pytest.mark.parametrize(
+    "string, out",
+    [
+        # dollar replacement:
+        ("a $a + b = c$ b", r"a \(a + b = c\) b"),
+        (r"a \$a + b = c\$ b", r"a \$a + b = c\$ b"),
+        (r"a \\$a + b = c\\$ b", "a \\\\\n\\(a + b = c\\\\\n\\) b"),
+        # text mods:
+        ("{\\em it's me!}", "\\emph{it's me!}"),
+        # comments:
+        ("lorem  %some comment  \n %sit amet", "lorem"),
+        ("% lorem some comment  \n sit amet", " sit amet"),
+        ("A % lorem some comment  \n sit amet", "A\n sit amet"),
+        ("{equation}%comment", "{equation}"),
+        # multiple comment lines:
+        ("A\n%\n%\nB", "A\nB"),
+        # comment last:
+        ("somemacro{%\n" "foobar% \n" "}", "somemacro{%\nfoobar%\n}"),
+        # trailing whitespace:
+        ("lorem    \n sit amet", "lorem\n sit amet"),
+        # obsolete text mod:
+        ("lorem {\\it ipsum dolor} sit amet", "lorem \\textit{ipsum dolor} sit amet"),
+        # multiple spaces:
+        ("lorem   ipsum dolor sit  amet", "lorem ipsum dolor sit amet"),
+        # It's allowed as indentation at the beginning of lines:
+        ("a\n    b\nc", "a\n    b\nc"),
+        ("\\[\n  S(T)\\leq S(P_n).\n\\]\n", "\\[\n  S(T)\\leq S(P_n).\n\\]\n"),
+        # spaces with brackets:
+        ("( 1+2 ) { 3+4 } \\left( 5+6 \\right)", "(1+2) {3+4} \\left(5+6\\right)"),
+        # multiple newlines:
+        ("lorem  \n\n\n\n\n\n ipsum dolor   sit", "lorem\n\n\n ipsum dolor sit"),
+        # $$:
+        ("a $$a + b = c$$ b", "a\n\\[\na + b = c\n\\]\nb"),
+        # whitespace after curly:
+        ("\\textit{ \nlorem  \n\n\n ipsum   dol}", "\\textit{\nlorem\n\n\n ipsum dol}"),
+        # sub/superscript space:
+        ("2^ng", "2^n g"),
+        ("1/n^3", "1/n^3"),
+        ("n^3", "n^3"),
+        ("(n^3)", "(n^3)"),
+        ("n^\\alpha", "n^\\alpha"),
+        ("a^2_PP^2", "a^2_PP^2"),
+        # Underscore separation just produces too many false positives. Leave as is.
+        ("2_ng", "2_ng"),
+        # dots:
+        ("a,...,b", "a,\\dots,b"),
+        ("a,\\cdots,b", "a,\\dots,b"),
+        # punctuation outside math:
+        ("$a+b.$", "\\(a+b\\)."),
+        # whitespace before punctuation:
+        ("Some text .", "Some text."),
+        # nbsp before ref:
+        ("text \\ref{something}", "text~\\ref{something}"),
+        # nbsp space:
+        ("Some ~thing.", "Some thing."),
+        # double nbsp:
+        ("Some~~text.", "Some\\quad text."),
+        # \over to \frac:
+        ("{2\\over 3^{4+x}}", "\\frac{2}{3^{4+x}}"),
+        ("{\\pi \\over4}", "\\frac{\\pi}{4}"),
+        # overline warn:
+        ("\\overline", "\\overline"),
+        # linebreak after double backslash:
+        ("T $2\\\\3 4\\\\\n6\\\\[2mm]7$.", "T \\(2\\\\\n3 4\\\\\n6\\\\\n[2mm]7\\)."),
+        # keywords without backslash:
+        (
+            "maximum and logarithm $max_x log(x)$",
+            "maximum and logarithm \\(\\max_x \\log(x)\\)",
+        ),
+        # curly around round with exponent:
+        (
+            "$(a+b)^n \\left(a+b\\right)^{n+1}$",
+            r"\({(a+b)}^n {\left(a+b\right)}^{n+1}\)",
+        ),
+        # def vs. newcommand
+        ("\\def\\e{\\text{r}}", "\\newcommand{\\e}{\\text{r}}"),
+        # linebreak around begin/end:
+        (
+            "A\\begin{equation}a+b\\end{equation} B \n\\begin{a}\nd+e\n\\end{a}\nB",
+            "A\n\\begin{equation}\na+b\n\\end{equation}\nB\n\\begin{a}\nd+e\n\\end{a}\nB",
+        ),
+        # indentation is okay
+        (
+            "A\n  \\begin{equation}\n  a+b\n  \\end{equation}",
+            "A\n  \\begin{equation}\n  a+b\n  \\end{equation}",
+        ),
+        # centerline:
+        ("\\centerline{foobar}", "{\\centering foobar}"),
+        # eqnarray align:
+        (
+            "A\\begin{eqnarray*}a+b\\end{eqnarray*}F",
+            "A\n\\begin{align*}\na+b\n\\end{align*}\nF",
+        ),
+        # env label:
+        ("A\n\\begin{lemma}\n\\label{lvalpp}", "A\n\\begin{lemma}\\label{lvalpp}"),
+        ("A\n\\section{Intro}\n\\label{lvalpp}", "A\n\\section{Intro}\\label{lvalpp}"),
+        (
+            "A\n\\subsection{Intro}\n\\label{lvalpp}",
+            "A\n\\subsection{Intro}\\label{lvalpp}",
+        ),
+        # coloneqq
+        ("A:=b+c", "A\\coloneqq b+c"),
+        ("A := b+c", "A \\coloneqq b+c"),
+        ("A : = b+c", "A \\coloneqq b+c"),
+        ("b+c =  : A", "b+c \\eqqcolon A"),
+        # tabular column spec:
+        ("\\begin{tabular} \n {ccc}\ncontent", "\\begin{tabular}{ccc}\ncontent"),
+        # env option spec:
+        ("\\begin{table} \n [h!]G", "\\begin{table}[h!]\nG"),
+        ("\\begin{table}   [h!]G", "\\begin{table}[h!]\nG"),
+        ("\\begin{table}   [h!]\nG", "\\begin{table}[h!]\nG"),
+        ("\\begin{table} \n [h!]G", "\\begin{table}[h!]\nG"),
+        ("\\begin{table} \n [h!]\\label{foo}", "\\begin{table}[h!]\\label{foo}"),
+        ("\\begin{table} \n [h!]\\label{foo}\nG", "\\begin{table}[h!]\\label{foo}\nG"),
+        # space around operators:
+        ("a+b=c", "a+b = c"),
+        ("a+b&=&c", "a+b &=& c"),
+        # SI percentage:
+        ("20\\% \\SI{30}{\\%}", "\\SI{20}{\\%} \\SI{30}{\\%}"),
+        # escaped percentage sign:
+        ("25\\% gain", "\\SI{25}{\\%} gain"),
+    ],
+)
+def test_compare(string, out):
+    assert blacktex.clean(string) == out
 
 
 def test_over_frac_warn():
@@ -202,155 +154,3 @@ def test_over_frac_warn():
     with pytest.warns(UserWarning):
         out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "Some $2\\over 3^{4+x}$."
-
-
-def test_overline_warn():
-    input_string = "\\overline"
-    out = blacktex.clean(input_string)
-    assert out == "\\overline"
-
-
-def test_linebreak_after_double_backslash():
-    input_string = "Some $2\\\\3 4\\\\\n6\\\\[2mm]7$."
-    out = blacktex.clean(input_string, keep_dollar=True)
-    assert out == "Some $2\\\\\n3 4\\\\\n6\\\\\n[2mm]7$."
-
-
-def test_nbsp_space():
-    input_string = "Some ~thing."
-    out = blacktex.clean(input_string)
-    assert out == "Some thing."
-
-
-def test_keywords_without_backslash():
-    input_string = "maximum and logarithm $max_x log(x)$"
-    out = blacktex.clean(input_string, keep_dollar=True)
-    assert out == "maximum and logarithm $\\max_x \\log(x)$"
-
-
-def test_curly_around_round_with_exponent():
-    input_string = "$(a+b)^n \\left(a+b\\right)^{n+1}$"
-    out = blacktex.clean(input_string, keep_dollar=True)
-    assert out == "${(a+b)}^n {\\left(a+b\\right)}^{n+1}$"
-
-
-def test_def_newcommand():
-    input_string = "\\def\\e{\\text{r}}"
-    out = blacktex.clean(input_string)
-    assert out == "\\newcommand{\\e}{\\text{r}}"
-
-
-def test_linebreak_around_begin_end():
-    input_string = (
-        "A\\begin{equation}a+b\\end{equation} B \n\\begin{a}\nd+e\n\\end{a}\nB"
-    )
-    out = blacktex.clean(input_string)
-    ref = "A\n\\begin{equation}\na+b\n\\end{equation}\nB\n\\begin{a}\nd+e\n\\end{a}\nB"
-    assert out == ref
-
-    # indentation is okay
-    input_string = "A\n  \\begin{equation}\n  a+b\n  \\end{equation}"
-    out = blacktex.clean(input_string)
-    assert out == "A\n  \\begin{equation}\n  a+b\n  \\end{equation}"
-
-
-def test_centerline():
-    input_string = "\\centerline{foobar}"
-    out = blacktex.clean(input_string)
-    assert out == "{\\centering foobar}"
-
-
-def test_eqnarray_align():
-    input_string = "A\\begin{eqnarray*}a+b\\end{eqnarray*}F"
-    out = blacktex.clean(input_string)
-    assert out == "A\n\\begin{align*}\na+b\n\\end{align*}\nF"
-
-
-def test_env_label():
-    input_string = "A\n\\begin{lemma}\n\\label{lvalpp}"
-    out = blacktex.clean(input_string)
-    assert out == "A\n\\begin{lemma}\\label{lvalpp}"
-
-    input_string = "A\n\\section{Intro}\n\\label{lvalpp}"
-    out = blacktex.clean(input_string)
-    assert out == "A\n\\section{Intro}\\label{lvalpp}"
-
-    input_string = "A\n\\subsection{Intro}\n\\label{lvalpp}"
-    out = blacktex.clean(input_string)
-    assert out == "A\n\\subsection{Intro}\\label{lvalpp}"
-
-
-def test_coloneqq():
-    input_string = "A:=b+c"
-    out = blacktex.clean(input_string)
-    assert out == "A\\coloneqq b+c"
-
-    input_string = "A := b+c"
-    out = blacktex.clean(input_string)
-    assert out == "A \\coloneqq b+c"
-
-    input_string = "A : = b+c"
-    out = blacktex.clean(input_string)
-    assert out == "A \\coloneqq b+c"
-
-    input_string = "b+c =  : A"
-    out = blacktex.clean(input_string)
-    assert out == "b+c \\eqqcolon A"
-
-
-def test_tabular_column_spec():
-    input_string = "\\begin{tabular} \n {ccc}\ncontent"
-    out = blacktex.clean(input_string)
-    assert out == "\\begin{tabular}{ccc}\ncontent"
-
-
-def test_env_option_spec():
-    input_string = "\\begin{table} \n [h!]G"
-    out = blacktex.clean(input_string)
-    assert out == "\\begin{table}[h!]\nG"
-
-    input_string = "\\begin{table}   [h!]G"
-    out = blacktex.clean(input_string)
-    assert out == "\\begin{table}[h!]\nG"
-
-    input_string = "\\begin{table}   [h!]\nG"
-    out = blacktex.clean(input_string)
-    assert out == "\\begin{table}[h!]\nG"
-
-    input_string = "\\begin{table} \n [h!]G"
-    out = blacktex.clean(input_string)
-    assert out == "\\begin{table}[h!]\nG"
-
-    input_string = "\\begin{table} \n [h!]\\label{foo}"
-    out = blacktex.clean(input_string)
-    assert out == "\\begin{table}[h!]\\label{foo}"
-
-    input_string = "\\begin{table} \n [h!]\\label{foo}\nG"
-    out = blacktex.clean(input_string)
-    assert out == "\\begin{table}[h!]\\label{foo}\nG"
-
-
-def test_space_around_operators():
-    input_string = "a+b=c"
-    out = blacktex.clean(input_string)
-    assert out == "a+b = c"
-
-    input_string = "a+b&=&c"
-    out = blacktex.clean(input_string)
-    assert out == "a+b &=& c"
-
-
-def test_si_percentage():
-    input_string = "20\\% \\SI{30}{\\%}"
-    out = blacktex.clean(input_string)
-    assert out == "\\SI{20}{\\%} \\SI{30}{\\%}"
-
-
-def test_escaped_percentage_sign():
-    input_string = "25\\% gain"
-    out = blacktex.clean(input_string)
-    assert out == "\\SI{25}{\\%} gain"
-
-
-if __name__ == "__main__":
-    test_dollar()
