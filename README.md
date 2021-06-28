@@ -39,7 +39,11 @@ You can use
 ```
 blacktex -i in.tex
 ```
-to modify a file in-place. See `blacktex -h` for all options.
+or
+```
+blacktex -m file1.tex file2.tex
+```
+to modify a file/-s in-place. See `blacktex -h` for all options.
 
 ### Installation
 
@@ -48,6 +52,17 @@ blacktex is [available from the Python Package Index](https://pypi.python.org/py
 pip install -U blacktex
 ```
 you can install/upgrade.
+
+### [Pre-commit](https://pre-commit.com/)
+
+Add this to your `.pre-commit-config.yaml`.
+
+```yaml
+  - repo: https://github.com/nschloe/blacktex
+    rev:  ''  # Use the sha / tag /branch you want to point at
+    hooks:
+      - id: blacktex
+```
 
 ### License
 This software is published under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
