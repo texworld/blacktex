@@ -8,13 +8,34 @@ def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
 
-    out = blacktex.clean(args.infile.read(), args.keep_comments, args.keep_dollar_math)
+    if len(args.infiles) and not args.allow_multiple_files:
+        print(
+            "Too many files, the '-m' needs to be set to use multiple files.",
+            file=sys.stderr,
+        )
+        return 1
 
-    if args.in_place:
-        with open(args.infile.name, "w") as f:
-            f.write(out)
+    if args.allow_multiple_files and args.infile is sys.stdin:
+        print(
+            "Too few files, multiple file mode needs at least one file.",
+            file=sys.stderr,
+        )
+        return 1
+
+    elif args.allow_multiple_files:
+        infile = [args.infile, args.outfile, *args.infiles]
     else:
-        args.outfile.write(out)
+        infile = args.infile
+
+    return_values = blacktex.process_file(
+        infile,
+        args.outfile,
+        args.in_place,
+        args.keep_comments,
+        args.keep_dollar_math,
+    )
+
+    return int(any(return_values))
 
 
 def _get_parser():
@@ -31,13 +52,28 @@ def _get_parser():
     parser.add_argument(
         "outfile",
         nargs="?",
-        type=argparse.FileType("w"),
+        type=argparse.FileType("a+"),
         default=sys.stdout,
         help="output LaTeX file (default: stdout)",
     )
 
     parser.add_argument(
+        "infiles",
+        nargs="*",
+        type=argparse.FileType("r"),
+        default=[],
+        help="list of files to process (needs '-m' flag)",
+    )
+
+    parser.add_argument(
         "-i", "--in-place", action="store_true", help="modify infile in place"
+    )
+
+    parser.add_argument(
+        "-m",
+        "--allow-multiple-files",
+        action="store_true",
+        help="allows passing multiple input files and activates in-place mode",
     )
 
     parser.add_argument(

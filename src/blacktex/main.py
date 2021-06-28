@@ -1,5 +1,8 @@
+import io
 import re
+import sys
 import warnings
+from typing import List, Union
 
 
 def _remove_comments(string):
@@ -365,3 +368,38 @@ def clean(string, keep_comments=False, keep_dollar=False):
     out = _remove_multiple_newlines(out)
     out = _remove_multiple_spaces(out)
     return out
+
+
+def process_file(
+    infile: Union[io.TextIOWrapper, List[io.TextIOWrapper]],
+    outfile: io.TextIOWrapper,
+    in_place=False,
+    keep_comments=False,
+    keep_dollar=False,
+    return_values=[],
+) -> List[int]:
+    if isinstance(infile, list):
+        for infile in infile:
+            if infile is not sys.stdin and infile is not sys.stdout:
+                process_file(infile, outfile, True, keep_comments, keep_dollar)
+    else:
+        # needed for multiple file mode since outfile is opened in a+ mode
+        if infile is not sys.stdin:
+            infile.seek(0)
+        content = infile.read()
+
+        out = clean(content, keep_comments, keep_dollar)
+
+        if in_place:
+            if content != out:
+                with open(infile.name, "w") as f:
+                    f.write(out)
+        else:
+            if outfile is not sys.stdout:
+                outfile.seek(0)
+                outfile.truncate()
+            outfile.write(out)
+
+        if content != out and (in_place or outfile is not sys.stdout):
+            return_values.append(1)
+    return return_values
