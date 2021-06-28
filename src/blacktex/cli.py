@@ -33,6 +33,7 @@ def main(argv=None):
         args.in_place,
         args.keep_comments,
         args.keep_dollar_math,
+        args.encoding,
     )
 
     return int(any(return_values))
@@ -63,6 +64,14 @@ def _get_parser():
         type=argparse.FileType("r"),
         default=[],
         help="list of files to process (needs '-m' flag)",
+    )
+
+    parser.add_argument(
+        "-e",
+        "--encoding",
+        type=str,
+        default=None,
+        help="encoding to use for reading and writing files",
     )
 
     parser.add_argument(

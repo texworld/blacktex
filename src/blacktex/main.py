@@ -376,6 +376,8 @@ def process_file(
     in_place=False,
     keep_comments=False,
     keep_dollar=False,
+    encoding=None,
+    *,
     return_values=[],
 ) -> List[int]:
     if isinstance(infile, list):
@@ -383,22 +385,23 @@ def process_file(
             if infile is not sys.stdin and infile is not sys.stdout:
                 process_file(infile, outfile, True, keep_comments, keep_dollar)
     else:
-        # needed for multiple file mode since outfile is opened in a+ mode
-        if infile is not sys.stdin:
-            infile.seek(0)
-        content = infile.read()
+        if infile is sys.stdin:
+            content = infile.read()
+        else:
+            with open(infile.name, "r", encoding=encoding) as f:
+                content = f.read()
 
         out = clean(content, keep_comments, keep_dollar)
 
         if in_place:
             if content != out:
-                with open(infile.name, "w") as f:
+                with open(infile.name, "w", encoding=encoding) as f:
                     f.write(out)
-        else:
-            if outfile is not sys.stdout:
-                outfile.seek(0)
-                outfile.truncate()
+        elif outfile is sys.stdout:
             outfile.write(out)
+        else:
+            with open(outfile.name, "w", encoding=encoding) as f:
+                f.write(out)
 
         if content != out and (in_place or outfile is not sys.stdout):
             return_values.append(1)
