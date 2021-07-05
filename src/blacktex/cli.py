@@ -8,6 +8,7 @@ def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
 
+    stdout = []
     for fl in args.infiles:
         content = fl.read()
         out = blacktex.clean(content, args.keep_comments, args.keep_dollar_math)
@@ -15,7 +16,10 @@ def main(argv=None):
             with open(fl.name, "w") as f:
                 f.write(out)
         else:
-            print(out)
+            stdout.append(out)
+
+    if not args.in_place:
+        return "\n".join(stdout)
 
 
 def _get_parser():
