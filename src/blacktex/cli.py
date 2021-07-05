@@ -8,36 +8,28 @@ def main(argv=None):
     parser = _get_parser()
     args = parser.parse_args(argv)
 
-    out = blacktex.clean(args.infile.read(), args.keep_comments, args.keep_dollar_math)
-
-    if args.in_place:
-        with open(args.infile.name, "w") as f:
-            f.write(out)
-    else:
-        args.outfile.write(out)
+    for fl in args.infiles:
+        content = fl.read()
+        out = blacktex.clean(content, args.keep_comments, args.keep_dollar_math)
+        if args.in_place:
+            with open(fl.name, "w") as f:
+                f.write(out)
+        else:
+            print(out)
 
 
 def _get_parser():
     parser = argparse.ArgumentParser(description="Clean up LaTeX files.")
 
     parser.add_argument(
-        "infile",
-        nargs="?",
+        "infiles",
+        nargs="+",
         type=argparse.FileType("r"),
-        default=sys.stdin,
-        help="input LaTeX file (default: stdin)",
+        help="input LaTeX file",
     )
 
     parser.add_argument(
-        "outfile",
-        nargs="?",
-        type=argparse.FileType("w"),
-        default=sys.stdout,
-        help="output LaTeX file (default: stdout)",
-    )
-
-    parser.add_argument(
-        "-i", "--in-place", action="store_true", help="modify infile in place"
+        "-i", "--in-place", action="store_true", help="modify all files in place"
     )
 
     parser.add_argument(
