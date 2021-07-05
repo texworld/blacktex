@@ -18,7 +18,7 @@ comments from a given file and corrects [some common
 anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf). For example,
 with
 ```
-blacktex in.tex out.tex
+blacktex in.tex > out.tex
 ```
 the input file
 ```latex
@@ -37,9 +37,9 @@ and \(y = 2^n g\) with \(n = 1,\dots,10\), we have \(\frac{\Gamma}{2} = 8\).
 ```
 You can use
 ```
-blacktex -i in.tex
+blacktex -i in0.tex in1.tex ...
 ```
-to modify a file in-place. See `blacktex -h` for all options.
+to modify files in-place. See `blacktex -h` for all options.
 
 ### Installation
 
