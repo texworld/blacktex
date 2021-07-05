@@ -9,17 +9,22 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     stdout = []
+    return_code = 0
     for fl in args.infiles:
-        content = fl.read()
+        with open(fl.name, encoding=args.encoding) as f:
+            content = f.read()
         out = blacktex.clean(content, args.keep_comments, args.keep_dollar_math)
         if args.in_place:
-            with open(fl.name, "w") as f:
+            return_code = return_code or int(content != out)
+            with open(fl.name, "w", encoding=args.encoding) as f:
                 f.write(out)
         else:
             stdout.append(out)
 
     if not args.in_place:
-        return "\n".join(stdout)
+        print("\n".join(stdout), end="")
+
+    return return_code
 
 
 def _get_parser():
@@ -30,6 +35,14 @@ def _get_parser():
         nargs="+",
         type=argparse.FileType("r"),
         help="input LaTeX file",
+    )
+
+    parser.add_argument(
+        "-e",
+        "--encoding",
+        type=str,
+        default=None,
+        help="encoding to use for reading and writing files",
     )
 
     parser.add_argument(
