@@ -26,6 +26,17 @@ def test_cli_stdout(infiles: List[Path], capsys: CaptureFixture):
     assert infile.read_text() == "infile_1.tex\na+b=c"
 
 
+def test_cli_encoding(tmp_path: Path):
+    infile = tmp_path / "infile_encoding.tex"
+    result = "äöüéкий的"
+    infile.write_text(result, encoding="utf8")
+
+    return_value = blacktex.cli.main(["-i", "-e=utf8", str(infile)])
+
+    assert return_value == 0
+    assert infile.read_text(encoding="utf8") == result
+
+
 def test_cli_inplace(infiles: List[Path]):
     infile = infiles[0]
 
