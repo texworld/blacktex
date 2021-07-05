@@ -9,17 +9,21 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     stdout = []
+    return_code = 0
     for fl in args.infiles:
         content = fl.read()
         out = blacktex.clean(content, args.keep_comments, args.keep_dollar_math)
         if args.in_place:
+            return_code = return_code or int(content != out)
             with open(fl.name, "w") as f:
                 f.write(out)
         else:
             stdout.append(out)
 
     if not args.in_place:
-        return "\n".join(stdout)
+        print("\n".join(stdout), end="")
+
+    return return_code
 
 
 def _get_parser():
