@@ -83,17 +83,13 @@ def _replace_dollar(string: str) -> str:
 
 
 def _replace_obsolete_text_mods(string: str) -> str:
-    string = string.replace("{\\bf ", "\\textbf{")
-    string = string.replace("{\\it ", "\\textit{")
-    string = string.replace("{\\rm ", "\\textrm{")
-    string = string.replace("{\\sc ", "\\textsc{")
-    string = string.replace("{\\sf ", "\\textsf{")
-    string = string.replace("{\\sl ", "\\textsl{")
-    string = string.replace("{\\tt ", "\\texttt{")
+    # Replace {\it foo} by \textit{foo}. If a letter directly preceeds the curly
+    # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
+    string = re.sub(r"([^a-zA-Z]){\\(bf|it|rm|sc|sf|sl|tt) ", r"\1\\text\2{", string)
     # https://tex.stackexchange.com/a/25914/13262:
     # [\em] May be useful when defining macros. In continuous text \emph{...} should be
     # preferred to \em.
-    string = string.replace("{\\em ", "\\emph{")
+    string = string.replace(r"{\em ", r"\emph{")
     return string
 
 

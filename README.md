@@ -13,7 +13,7 @@
 [![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/blacktex.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/blacktex)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
-blacktex is a little tool, helping with the article editing for LaTeX. It removes all
+blacktex is a command-line tool that helps with article editing in LaTeX. It removes all
 comments from a given file and corrects [some common
 anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf). For example,
 with
@@ -43,11 +43,13 @@ to modify files in-place. See `blacktex -h` for all options.
 
 ### Installation
 
-blacktex is [available from the Python Package Index](https://pypi.org/project/blacktex/), so with
+blacktex is [available from the Python Package
+Index](https://pypi.org/project/blacktex/), so with
 ```
 pip install -U blacktex
 ```
 you can install/upgrade.
 
 ### License
-This software is published under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
+This software is published under the [GPLv3
+license](https://www.gnu.org/licenses/gpl-3.0.en.html).
