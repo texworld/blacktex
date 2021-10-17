@@ -108,13 +108,8 @@ def _replace_dots(string):
     return string
 
 
-def _replace_punctuation_outside_math(string):
-    string = re.sub(r"\.\\\)", r"\).", string)
-    string = re.sub(r",\\\)", r"\),", string)
-    string = re.sub(r";\\\)", r"\);", string)
-    string = re.sub(r"!\\\)", r"\)!", string)
-    string = re.sub(r"\?\\\)", r"\)?", string)
-    return string
+def _replace_punctuation_at_math_end(string):
+    return re.sub(r"([\.,;!\?])\\\)", r"\)\1", string)
 
 
 def _remove_whitespace_before_punctuation(string):
@@ -339,7 +334,7 @@ def clean(string, keep_comments=False, keep_dollar=False):
     out = _replace_dollar_dollar(out)
     if not keep_dollar:
         out = _replace_dollar(out)
-    out = _replace_punctuation_outside_math(out)
+    out = _replace_punctuation_at_math_end(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_subsuperscript(out)
