@@ -71,6 +71,8 @@ def test_readme():
         ("a,\\cdots,b", "a,\\dots,b"),
         # punctuation outside math:
         ("$a+b.$", "\\(a+b\\)."),
+        # <https://github.com/nschloe/blacktex/issues/43>
+        (".$a+b$", ".\\(a+b\\)"),
         # whitespace before punctuation:
         ("Some text .", "Some text."),
         # nbsp before ref:
