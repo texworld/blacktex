@@ -129,8 +129,7 @@ def _add_nbsp_before_reference(string):
 
 
 def _replace_double_nbsp(string):
-    string = re.sub("~~", r"\\quad ", string)
-    return string
+    return re.sub("~~", r"\\quad ", string)
 
 
 def _replace_nbsp_space(string):
