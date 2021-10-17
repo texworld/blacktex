@@ -2,7 +2,7 @@ import re
 import warnings
 
 
-def _remove_comments(string):
+def _remove_comments(string: str) -> str:
     """Remove comments unless the comment character is the last non-whitespace character
     in a line. (This is often used in macros etc.)
     """
@@ -23,21 +23,21 @@ def _remove_comments(string):
     return string
 
 
-def _remove_trailing_whitespace(string):
+def _remove_trailing_whitespace(string: str) -> str:
     return "\n".join([line.rstrip() for line in string.split("\n")])
 
 
-def _remove_multiple_spaces(string):
+def _remove_multiple_spaces(string: str) -> str:
     """Replaces multiple spaces by one, except after a newline."""
     return re.sub("([^\n ])  +", r"\1 ", string)
 
 
-def _remove_multiple_newlines(string):
+def _remove_multiple_newlines(string: str) -> str:
     string = re.sub("\n\n\n\n+", "\n\n\n", string)
     return string
 
 
-def _remove_whitespace_around_brackets(string):
+def _remove_whitespace_around_brackets(string: str) -> str:
     string = re.sub("{[ \t]+", "{", string)
     string = re.sub("[ \t]+}", "}", string)
     string = re.sub("\\([ \t]+", "(", string)
@@ -46,7 +46,7 @@ def _remove_whitespace_around_brackets(string):
     return string
 
 
-def _replace_dollar_dollar(string):
+def _replace_dollar_dollar(string: str) -> str:
     """Replace $$...$$ by \\[...\\]."""
     p = re.compile(r"\$\$")
     locations = [m.start() for m in p.finditer(string)]
@@ -63,7 +63,7 @@ def _replace_dollar_dollar(string):
     return _substitute_string_ranges(string, ranges, replacements)
 
 
-def _replace_dollar(string):
+def _replace_dollar(string: str) -> str:
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
     # (?<!\\\\) checks there is no backslash before (negative lookbehind)
     # (?:\\\\{2})* matches all even numbers of backslashes
@@ -82,7 +82,7 @@ def _replace_dollar(string):
     return _substitute_string_ranges(string, ranges, replacements)
 
 
-def _replace_obsolete_text_mods(string):
+def _replace_obsolete_text_mods(string: str) -> str:
     string = string.replace("{\\bf ", "\\textbf{")
     string = string.replace("{\\it ", "\\textit{")
     string = string.replace("{\\rm ", "\\textrm{")
@@ -97,27 +97,22 @@ def _replace_obsolete_text_mods(string):
     return string
 
 
-def _add_space_after_single_subsuperscript(string):
+def _add_space_after_single_subsuperscript(string: str) -> str:
     string = re.sub(r"([\^])([^{\\])([^_\^\s\$})])", r"\1\2 \3", string)
     return string
 
 
-def _replace_dots(string):
+def _replace_dots(string: str) -> str:
     string = re.sub(r"\.\.\.", r"\\dots", string)
     string = re.sub(r",\\cdots,", r",\\dots,", string)
     return string
 
 
-def _replace_punctuation_outside_math(string):
-    string = re.sub(r"\.\$", "$.", string)
-    string = re.sub(r",\$", "$,", string)
-    string = re.sub(r";\$", "$;", string)
-    string = re.sub(r"!\$", "$!", string)
-    string = re.sub(r"\?\$", "$?", string)
-    return string
+def _replace_punctuation_at_math_end(string: str) -> str:
+    return re.sub(r"([\.,;!\?])\\\)", r"\)\1", string)
 
 
-def _remove_whitespace_before_punctuation(string):
+def _remove_whitespace_before_punctuation(string: str) -> str:
     string = re.sub(r"\s+\.", ".", string)
     string = re.sub(r"\s+,", ",", string)
     string = re.sub(r"\s+;", ";", string)
@@ -126,25 +121,24 @@ def _remove_whitespace_before_punctuation(string):
     return string
 
 
-def _add_nbsp_before_reference(string):
+def _add_nbsp_before_reference(string: str) -> str:
     string = re.sub(r"\s+\\ref{", r"~\\ref{", string)
     string = re.sub(r"\s+\\eqref{", r"~\\eqref{", string)
     string = re.sub(r"\s+\\cite", r"~\\cite", string)
     return string
 
 
-def _replace_double_nbsp(string):
-    string = re.sub("~~", r"\\quad ", string)
-    return string
+def _replace_double_nbsp(string: str) -> str:
+    return re.sub("~~", r"\\quad ", string)
 
 
-def _replace_nbsp_space(string):
+def _replace_nbsp_space(string: str) -> str:
     string = re.sub("~ ", " ", string)
     string = re.sub(" ~", " ", string)
     return string
 
 
-def _substitute_string_ranges(string, ranges, replacements):
+def _substitute_string_ranges(string: str, ranges, replacements) -> str:
     if ranges:
         lst = [string[: ranges[0][0]]]
         for k, replacement in enumerate(replacements[:-1]):
@@ -154,7 +148,7 @@ def _substitute_string_ranges(string, ranges, replacements):
     return string
 
 
-def _replace_over(string):
+def _replace_over(string: str) -> str:
     p = re.compile(r"\\over[^a-z]")
     locations = [m.start() for m in p.finditer(string)]
 
@@ -210,11 +204,11 @@ def _replace_over(string):
     return _substitute_string_ranges(string, ranges, fracs)
 
 
-def _add_linebreak_after_double_backslash(string):
+def _add_linebreak_after_double_backslash(string: str) -> str:
     return re.sub(r"\\\\([^\n])", r"\\\\\n\1", string)
 
 
-def _add_backslash_for_keywords(string):
+def _add_backslash_for_keywords(string: str) -> str:
     insert = []
     for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
         p = re.compile(fr"[^A-Za-z]{keyword}[^A-Za-z]")
@@ -228,7 +222,7 @@ def _add_backslash_for_keywords(string):
     )
 
 
-def _add_curly_brackets_around_round_brackets_with_exponent(string):
+def _add_curly_brackets_around_round_brackets_with_exponent(string: str) -> str:
     p = re.compile(r"\)\^")
     locations = [m.start() for m in p.finditer(string)]
 
@@ -258,7 +252,7 @@ def _add_curly_brackets_around_round_brackets_with_exponent(string):
     return _substitute_string_ranges(string, [(i, i) for i in insert], replacements)
 
 
-def _replace_def_by_newcommand(string):
+def _replace_def_by_newcommand(string: str) -> str:
     p = re.compile(r"\\def\\[A-Za-z]+")
 
     ranges = []
@@ -270,7 +264,7 @@ def _replace_def_by_newcommand(string):
     return _substitute_string_ranges(string, ranges, replacements)
 
 
-def _add_linebreak_around_begin_end(string):
+def _add_linebreak_around_begin_end(string: str) -> str:
     string = re.sub(r"([^\n ]) *(\\begin{.*?})", r"\1\n\2", string)
     string = re.sub(r"(\\begin{.*?}) *([^\n ])", r"\1\n\2", string)
 
@@ -285,38 +279,38 @@ def _add_linebreak_around_begin_end(string):
     return string
 
 
-def _replace_centerline(string):
+def _replace_centerline(string: str) -> str:
     return re.sub(r"\\centerline{", r"{\\centering ", string)
 
 
-def _replace_eqnarray(string):
+def _replace_eqnarray(string: str) -> str:
     return re.sub("eqnarray", "align", string)
 
 
-def _put_spec_on_same_line_as_environment(string):
+def _put_spec_on_same_line_as_environment(string: str) -> str:
     string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])\n", r"\1\2", string)
     string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])([^\n])", r"\1\2\n\3", string)
     return string
 
 
-def _put_label_on_same_line_as_environment(string):
+def _put_label_on_same_line_as_environment(string: str) -> str:
     out = re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
     out = re.sub(r"(\\section{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
     out = re.sub(r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
     return out
 
 
-def _replace_colon_equal_by_coloneqq(string):
+def _replace_colon_equal_by_coloneqq(string: str) -> str:
     out = re.sub(r":\s*=", r"\\coloneqq ", string)
     out = re.sub(r"=\s*:", r"\\eqqcolon ", out)
     return out
 
 
-def _remove_space_before_tabular_column_specification(string):
+def _remove_space_before_tabular_column_specification(string: str) -> str:
     return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2", string)
 
 
-def _add_spaces_around_equality_sign(string):
+def _add_spaces_around_equality_sign(string: str) -> str:
     string = re.sub(r"([^\s&])=", r"\1 =", string)
     string = re.sub(r"([^\s])&=", r"\1 &=", string)
 
@@ -325,21 +319,21 @@ def _add_spaces_around_equality_sign(string):
     return string
 
 
-def _si_percentage(string):
+def _si_percentage(string: str) -> str:
     # match float like https://stackoverflow.com/a/12643073/353337
     string = re.sub(r"([+-]?([0-9]*[.])?[0-9]+)[ \t]*\\%", r"\\SI{\1}{\%}", string)
     return string
 
 
-def clean(string, keep_comments=False, keep_dollar=False):
+def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -> str:
     out = string
     out = _remove_trailing_whitespace(out)
     if not keep_comments:
         out = _remove_comments(out)
-    out = _replace_punctuation_outside_math(out)
     out = _replace_dollar_dollar(out)
     if not keep_dollar:
         out = _replace_dollar(out)
+    out = _replace_punctuation_at_math_end(out)
     out = _replace_obsolete_text_mods(out)
     out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_subsuperscript(out)
