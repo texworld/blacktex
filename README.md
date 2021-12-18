@@ -16,8 +16,16 @@
 
 blacktex is a command-line tool that helps with article editing in LaTeX. It removes all
 comments from a given file and corrects [some common
-anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf). For example,
-with
+anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf).
+
+Install with one of
+
+```
+pip install -U blacktex
+conda install -c conda-forge blacktex
+```
+
+Then, with
 
 ```
 blacktex in.tex > out.tex
@@ -49,17 +57,6 @@ blacktex -i in0.tex in1.tex ...
 ```
 
 to modify files in-place. See `blacktex -h` for all options.
-
-### Installation
-
-blacktex is [available from the Python Package
-Index](https://pypi.org/project/blacktex/), so with
-
-```
-pip install -U blacktex
-```
-
-you can install/upgrade.
 
 ### License
 
