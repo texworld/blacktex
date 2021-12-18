@@ -83,7 +83,7 @@ def _replace_dollar(string: str) -> str:
 
 
 def _replace_obsolete_text_mods(string: str) -> str:
-    # Replace {\it foo} by \textit{foo}. If a letter directly preceeds the curly
+    # Replace {\it foo} by \textit{foo}. If a letter directly precedes the curly
     # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
     string = re.sub(r"([^a-zA-Z]){\\(bf|it|rm|sc|sf|sl|tt) ", r"\1\\text\2{", string)
     # https://tex.stackexchange.com/a/25914/13262:
