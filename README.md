@@ -18,16 +18,21 @@ blacktex is a command-line tool that helps with article editing in LaTeX. It rem
 comments from a given file and corrects [some common
 anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf). For example,
 with
+
 ```
 blacktex in.tex > out.tex
 ```
+
 the input file
+
 ```latex
 Because   of $$a+b=c$$ ({\it Pythogoras}),
 % @johnny remember to insert name
 and $y=2^ng$ with $n=1,...,10$, we have ${\Gamma \over 2}=8.$
 ```
+
 is converted to
+
 ```latex
 Because of
 \[
@@ -36,21 +41,27 @@ a+b = c
 (\textit{Pythogoras}),
 and \(y = 2^n g\) with \(n = 1,\dots,10\), we have \(\frac{\Gamma}{2} = 8\).
 ```
+
 You can use
+
 ```
 blacktex -i in0.tex in1.tex ...
 ```
+
 to modify files in-place. See `blacktex -h` for all options.
 
 ### Installation
 
 blacktex is [available from the Python Package
 Index](https://pypi.org/project/blacktex/), so with
+
 ```
 pip install -U blacktex
 ```
+
 you can install/upgrade.
 
 ### License
+
 This software is published under the [GPLv3
 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
