@@ -20,8 +20,8 @@ jobs:
         uses: pre-commit/action@v2.0.3
 
   build:
-    runs-on: ${{ matrix.os }}
     needs: [lint]
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
