@@ -35,7 +35,7 @@ Issues = "https://github.com/nschloe/blacktex/issues"
 Funding = "https://github.com/sponsors/nschloe"
 
 [project.scripts]
-tiptop = "blacktex.cli:main"
+blacktex = "blacktex.cli:main"
 
 [tool.isort]
 profile = "black"
