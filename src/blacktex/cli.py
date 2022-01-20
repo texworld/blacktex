@@ -1,7 +1,8 @@
 import argparse
-import sys
+from sys import version_info as vi
 
-import blacktex
+from .__about__ import __version__
+from .main import clean
 
 
 def main(argv=None):
@@ -13,7 +14,7 @@ def main(argv=None):
     for fl in args.infiles:
         with open(fl.name, encoding=args.encoding) as f:
             content = f.read()
-        out = blacktex.clean(content, args.keep_comments, args.keep_dollar_math)
+        out = clean(content, args.keep_comments, args.keep_dollar_math)
         if args.in_place:
             return_code = return_code or int(content != out)
             with open(fl.name, "w", encoding=args.encoding) as f:
@@ -60,12 +61,11 @@ def _get_parser():
         help="keep inline math with $...$",
     )
 
-    version_text = "blacktex {}, Python {}.{}.{}".format(
-        blacktex.__version__,
-        sys.version_info.major,
-        sys.version_info.minor,
-        sys.version_info.micro,
+    parser.add_argument(
+        "--version",
+        "-v",
+        action="version",
+        version=f"blacktex {__version__}, Python {vi.major}.{vi.minor}.{vi.micro}",
     )
-    parser.add_argument("--version", "-v", action="version", version=version_text)
 
     return parser
