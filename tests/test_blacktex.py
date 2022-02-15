@@ -76,7 +76,7 @@ import blacktex
             r"maximum and logarithm \(\max_x \log(x)\)",
         ),
         # def vs. newcommand
-        (r"\def\e{\text{r}}", r"\newcommand{\e}{\text{r}}"),
+        (r"\def\e{\text{r}}", r"\newcommand\e{\text{r}}"),
         # linebreak around begin/end:
         (
             "A\\begin{equation}a+b\\end{equation} B \n\\begin{a}\nd+e\n\\end{a}\nB",

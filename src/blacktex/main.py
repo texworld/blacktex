@@ -3,6 +3,7 @@ from typing import Callable
 
 from pylatexenc.latexwalker import (
     LatexCommentNode,
+    LatexEnvironmentNode,
     LatexGroupNode,
     LatexMacroNode,
     LatexMathNode,
@@ -238,15 +239,16 @@ def _add_backslash_for_keywords(string: str) -> str:
 
 
 def _replace_def_by_newcommand(string: str) -> str:
-    p = re.compile(r"\\def\\[A-Za-z]+")
+    def _repl(node):
+        if isinstance(node, LatexMacroNode):
+            if node.macroname == "def":
+                node.macroname = "newcommand"
+        return node
 
-    ranges = []
-    replacements = []
-    for m in p.finditer(string):
-        ranges.append((m.start(), m.end()))
-        replacements.append(f"\\newcommand{{{string[m.start() + 4 : m.end()]}}}")
-
-    return _substitute_string_ranges(string, ranges, replacements)
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
+    return nodelist_to_latex(nodelist)
 
 
 def _add_linebreak_around_begin_end(string: str) -> str:
@@ -269,7 +271,21 @@ def _replace_centerline(string: str) -> str:
 
 
 def _replace_eqnarray(string: str) -> str:
-    return re.sub("eqnarray", "align", string)
+    def _repl(node):
+        if isinstance(node, LatexEnvironmentNode):
+            # Also set envname, should be removed at some point
+            # TODO https://github.com/phfaist/pylatexenc/issues/81
+            if node.environmentname == "eqnarray":
+                node.environmentname = "align"
+                node.envname = "align"
+            elif node.environmentname == "eqnarray*":
+                node.envname = "align*"
+        return node
+
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
+    return nodelist_to_latex(nodelist)
 
 
 def _put_spec_on_same_line_as_environment(string: str) -> str:
