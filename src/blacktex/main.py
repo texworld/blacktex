@@ -63,23 +63,31 @@ def _remove_whitespace_around_brackets(string: str) -> str:
 
 def _replace_dollar_dollar(string: str) -> str:
     """Replace $$...$$ by \\[...\\]."""
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    for node in nodelist:
+
+    def _repl(node):
         if isinstance(node, LatexMathNode):
             if node.delimiters == ("$$", "$$"):
                 node.delimiters = ("\\[", "\\]")
+        return node
+
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
     return nodelist_to_latex(nodelist)
 
 
 def _replace_dollar(string: str) -> str:
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    for node in nodelist:
+
+    def _repl(node):
         if isinstance(node, LatexMathNode):
             if node.delimiters == ("$", "$"):
                 node.delimiters = ("\\(", "\\)")
+        return node
+
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
     return nodelist_to_latex(nodelist)
 
 
@@ -97,9 +105,6 @@ def _macro(macroname, *nodelists):
 def _replace_obsolete_text_mods(string: str) -> str:
     r"""Replace {\it foo} by \textit{foo} etc"""
     # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-
     replacements = [
         ("it", "textit"),
         ("bf", "textbf"),
@@ -114,20 +119,25 @@ def _replace_obsolete_text_mods(string: str) -> str:
         ("em", "emph"),
     ]
 
-    new_nodes = []
-    for node in nodelist:
-        new_node = node
-        if isinstance(node, LatexGroupNode):
-            # See if the first child in the group is a macro, e.g., {\it ...}
-            child0 = node.nodelist[0]
-            if isinstance(child0, LatexMacroNode):
-                for orig, repl in replacements:
-                    if child0.macroname == orig:
-                        new_node = _macro(repl, node.nodelist[1:])
-                        break
-        new_nodes.append(new_node)
+    def _repl(node):
+        if not isinstance(node, LatexGroupNode):
+            return node
+        # See if the first child in the group is a macro, e.g., {\it ...}
+        child0 = node.nodelist[0]
+        if not isinstance(child0, LatexMacroNode):
+            return node
 
-    return nodelist_to_latex(new_nodes)
+        for orig, repl in replacements:
+            if child0.macroname == orig:
+                node = _macro(repl, node.nodelist[1:])
+                break
+
+        return node
+
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
+    return nodelist_to_latex(nodelist)
 
 
 def _add_space_after_single_subsuperscript(string: str) -> str:
@@ -227,36 +237,6 @@ def _add_backslash_for_keywords(string: str) -> str:
     )
 
 
-def _add_curly_brackets_around_round_brackets_with_exponent(string: str) -> str:
-    p = re.compile(r"\)\^")
-    locations = [m.start() for m in p.finditer(string)]
-
-    insert = []
-    replacements = []
-    for loc in locations:
-        # Starting from loc, search to the left for an open (
-        num_open_brackets = 1
-        k = loc - 1
-        while num_open_brackets > 0:
-            if string[k] == "(":
-                num_open_brackets -= 1
-            elif string[k] == ")":
-                num_open_brackets += 1
-            k -= 1
-        k += 1
-
-        if k - 5 >= 0 and string[k - 5 : k] == "\\left":
-            insert.append(k - 5)
-        else:
-            insert.append(k)
-        replacements.append("{")
-
-        insert.append(loc + 1)
-        replacements.append("}")
-
-    return _substitute_string_ranges(string, [(i, i) for i in insert], replacements)
-
-
 def _replace_def_by_newcommand(string: str) -> str:
     p = re.compile(r"\\def\\[A-Za-z]+")
 
@@ -350,7 +330,6 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
     out = _si_percentage(out)
     out = _add_linebreak_after_double_backslash(out)
     out = _add_backslash_for_keywords(out)
-    out = _add_curly_brackets_around_round_brackets_with_exponent(out)
     out = _replace_def_by_newcommand(out)
     out = _add_linebreak_around_begin_end(out)
     out = _replace_centerline(out)

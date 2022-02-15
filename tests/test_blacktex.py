@@ -11,7 +11,7 @@ import blacktex
         (r"a \$a + b = c\$ b", r"a \$a + b = c\$ b"),
         (r"a \\$a + b = c\\$ b", "a \\\\\n\\(a + b = c\\\\\n\\) b"),
         # text mods:
-        ("{\\em it's me!}", "\\emph{it's me!}"),
+        (r"{\em it's me!}", r"\emph{it's me!}"),
         # comments:
         ("lorem  %some comment  \n %sit amet", "lorem "),
         ("% lorem some comment  \n sit amet", "sit amet"),
@@ -24,14 +24,14 @@ import blacktex
         # trailing whitespace:
         ("lorem    \n sit amet", "lorem\n sit amet"),
         # obsolete text mod:
-        ("lorem {\\it ipsum dolor} sit amet", "lorem \\textit{ipsum dolor} sit amet"),
+        (r"lorem {\it ipsum dolor} sit amet", r"lorem \textit{ipsum dolor} sit amet"),
         # multiple spaces:
         ("lorem   ipsum dolor sit  amet", "lorem ipsum dolor sit amet"),
         # It's allowed as indentation at the beginning of lines:
         ("a\n    b\nc", "a\n    b\nc"),
         ("\\[\n  S(T)\\leq S(P_n).\n\\]\n", "\\[\n  S(T)\\leq S(P_n).\n\\]\n"),
         # spaces with brackets:
-        ("( 1+2 ) { 3+4 } \\left( 5+6 \\right)", "(1+2) {3+4} \\left(5+6\\right)"),
+        (r"( 1+2 ) { 3+4 } \left( 5+6 \right)", r"(1+2) {3+4} \left(5+6\right)"),
         # multiple newlines:
         ("lorem  \n\n\n\n\n\n ipsum dolor   sit", "lorem\n\n\n ipsum dolor sit"),
         # $$:
@@ -73,15 +73,10 @@ import blacktex
         # keywords without backslash:
         (
             "maximum and logarithm $max_x log(x)$",
-            "maximum and logarithm \\(\\max_x \\log(x)\\)",
-        ),
-        # curly around round with exponent:
-        (
-            "$(a+b)^n \\left(a+b\\right)^{n+1}$",
-            r"\({(a+b)}^n {\left(a+b\right)}^{n+1}\)",
+            r"maximum and logarithm \(\max_x \log(x)\)",
         ),
         # def vs. newcommand
-        ("\\def\\e{\\text{r}}", "\\newcommand{\\e}{\\text{r}}"),
+        (r"\def\e{\text{r}}", r"\newcommand{\e}{\text{r}}"),
         # linebreak around begin/end:
         (
             "A\\begin{equation}a+b\\end{equation} B \n\\begin{a}\nd+e\n\\end{a}\nB",
@@ -136,9 +131,11 @@ import blacktex
         ("a+b=c", "a+b = c"),
         ("a+b&=&c", "a+b &=& c"),
         # SI percentage:
-        ("20\\% \\SI{30}{\\%}", "\\SI{20}{\\%} \\SI{30}{\\%}"),
+        (r"20\% \SI{30}{\%}", r"\SI{20}{\%} \SI{30}{\%}"),
         # escaped percentage sign:
-        ("25\\% gain", "\\SI{25}{\\%} gain"),
+        (r"25\% gain", r"\SI{25}{\%} gain"),
+        # https://github.com/nschloe/blacktex/issues/46
+        (r"\rightline{\bf a}", r"\rightline{\textbf{a}}"),
     ],
 )
 def test_compare(string, reference):
