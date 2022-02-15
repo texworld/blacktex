@@ -2,6 +2,7 @@ import re
 from typing import Callable
 
 from pylatexenc.latexwalker import (
+    LatexCharsNode,
     LatexCommentNode,
     LatexEnvironmentNode,
     LatexGroupNode,
@@ -23,11 +24,21 @@ def _traverse_tree(nodelist: list, fun: Callable):
     return nodelist
 
 
-def _remove_comments(string: str) -> str:
-    """Remove comments unless the comment character is the last non-whitespace character
-    in a line. (This is often used in macros etc.)
-    """
+def _macro(macroname, *nodelists):
+    """Creates a pylatexenc node that corresponds to \\macroname{nodelist}"""
+    return LatexMacroNode(
+        macroname=macroname,
+        nodeargd=ParsedMacroArgs(
+            argspec="{" * len(nodelists),
+            argnlist=[LatexGroupNode(nodelist=nodelist) for nodelist in nodelists],
+        ),
+    )
 
+
+def _remove_comments(string: str) -> str:
+    """Remove comments."""
+    # TODO unless the comment character is the last non-whitespace character in
+    # a line. (This is often used in macros etc.)
     def _rm(node):
         if isinstance(node, LatexCommentNode):
             return None
@@ -37,29 +48,6 @@ def _remove_comments(string: str) -> str:
     nodelist, _, _ = w.get_latex_nodes(pos=0)
     nodelist = _traverse_tree(nodelist, _rm)
     return nodelist_to_latex(nodelist)
-
-
-def _remove_trailing_whitespace(string: str) -> str:
-    return "\n".join([line.rstrip() for line in string.split("\n")])
-
-
-def _remove_multiple_spaces(string: str) -> str:
-    """Replaces multiple spaces by one, except after a newline."""
-    return re.sub("([^\n ])  +", r"\1 ", string)
-
-
-def _remove_multiple_newlines(string: str) -> str:
-    string = re.sub("\n\n\n\n+", "\n\n\n", string)
-    return string
-
-
-def _remove_whitespace_around_brackets(string: str) -> str:
-    string = re.sub("{[ \t]+", "{", string)
-    string = re.sub("[ \t]+}", "}", string)
-    string = re.sub("\\([ \t]+", "(", string)
-    string = re.sub("[ \t]+\\)", ")", string)
-    string = re.sub("[ \t]+\\\\right\\)", "\\\\right)", string)
-    return string
 
 
 def _replace_dollar_dollar(string: str) -> str:
@@ -90,17 +78,6 @@ def _replace_dollar(string: str) -> str:
     nodelist, _, _ = w.get_latex_nodes(pos=0)
     nodelist = _traverse_tree(nodelist, _repl)
     return nodelist_to_latex(nodelist)
-
-
-def _macro(macroname, *nodelists):
-    """Creates a pylatexenc node that corresponds to \\macroname{nodelist}"""
-    return LatexMacroNode(
-        macroname=macroname,
-        nodeargd=ParsedMacroArgs(
-            argspec="{" * len(nodelists),
-            argnlist=[LatexGroupNode(nodelist=nodelist) for nodelist in nodelists],
-        ),
-    )
 
 
 def _replace_obsolete_text_mods(string: str) -> str:
@@ -141,61 +118,18 @@ def _replace_obsolete_text_mods(string: str) -> str:
     return nodelist_to_latex(nodelist)
 
 
-def _add_space_after_single_subsuperscript(string: str) -> str:
-    string = re.sub(r"([\^])([^{\\])([^_\^\s\$})])", r"\1\2 \3", string)
-    return string
-
-
 def _replace_dots(string: str) -> str:
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    for node in nodelist:
+    def _repl(node):
         if isinstance(node, LatexMacroNode) and node.macroname == "cdots":
             node.macroname = "dots"
-    string = nodelist_to_latex(nodelist)
+        if isinstance(node, LatexCharsNode) and "..." in node.chars:
+            node.chars = node.chars.replace("...", r"\dots")
+        return node
 
-    string = re.sub(r"\.\.\.", r"\\dots", string)
-    return string
-
-
-def _replace_punctuation_at_math_end(string: str) -> str:
-    return re.sub(r"([\.,;!\?])\\\)", r"\)\1", string)
-
-
-def _remove_whitespace_before_punctuation(string: str) -> str:
-    string = re.sub(r"\s+\.", ".", string)
-    string = re.sub(r"\s+,", ",", string)
-    string = re.sub(r"\s+;", ";", string)
-    string = re.sub(r"\s+!", "!", string)
-    string = re.sub(r"\s+\?", "?", string)
-    return string
-
-
-def _add_nbsp_before_reference(string: str) -> str:
-    string = re.sub(r"\s+\\ref{", r"~\\ref{", string)
-    string = re.sub(r"\s+\\eqref{", r"~\\eqref{", string)
-    string = re.sub(r"\s+\\cite", r"~\\cite", string)
-    return string
-
-
-def _replace_double_nbsp(string: str) -> str:
-    return re.sub("~~", r"\\quad ", string)
-
-
-def _replace_nbsp_space(string: str) -> str:
-    string = re.sub("~ ", " ", string)
-    string = re.sub(" ~", " ", string)
-    return string
-
-
-def _substitute_string_ranges(string: str, ranges, replacements) -> str:
-    if ranges:
-        lst = [string[: ranges[0][0]]]
-        for k, replacement in enumerate(replacements[:-1]):
-            lst += [replacement, string[ranges[k][1] : ranges[k + 1][0]]]
-        lst += [replacements[-1], string[ranges[-1][1] :]]
-        string = "".join(lst)
-    return string
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
+    return nodelist_to_latex(nodelist)
 
 
 def _replace_over(string: str) -> str:
@@ -214,10 +148,36 @@ def _replace_over(string: str) -> str:
 
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-
     nodelist = _traverse_tree(nodelist, _replace)
-
     return nodelist_to_latex(nodelist)
+
+
+def _replace_def_by_newcommand(string: str) -> str:
+    def _repl(node):
+        if isinstance(node, LatexMacroNode):
+            if node.macroname == "def":
+                node.macroname = "newcommand"
+        return node
+
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
+    return nodelist_to_latex(nodelist)
+
+
+def _replace_punctuation_at_math_end(string: str) -> str:
+    """$a+b.$  ->  $a+b$."""
+    return re.sub(r"([\.,;!\?])\\\)", r"\)\1", string)
+
+
+def _substitute_string_ranges(string: str, ranges, replacements) -> str:
+    if ranges:
+        lst = [string[: ranges[0][0]]]
+        for k, replacement in enumerate(replacements[:-1]):
+            lst += [replacement, string[ranges[k][1] : ranges[k + 1][0]]]
+        lst += [replacements[-1], string[ranges[-1][1] :]]
+        string = "".join(lst)
+    return string
 
 
 def _add_linebreak_after_double_backslash(string: str) -> str:
@@ -236,34 +196,6 @@ def _add_backslash_for_keywords(string: str) -> str:
     return _substitute_string_ranges(
         string, [(i + 1, i + 1) for i in insert], len(insert) * ["\\"]
     )
-
-
-def _replace_def_by_newcommand(string: str) -> str:
-    def _repl(node):
-        if isinstance(node, LatexMacroNode):
-            if node.macroname == "def":
-                node.macroname = "newcommand"
-        return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
-    return nodelist_to_latex(nodelist)
-
-
-def _add_linebreak_around_begin_end(string: str) -> str:
-    string = re.sub(r"([^\n ]) *(\\begin{.*?})", r"\1\n\2", string)
-    string = re.sub(r"(\\begin{.*?}) *([^\n ])", r"\1\n\2", string)
-
-    string = re.sub(r"([^\n ]) *(\\end{.*?})", r"\1\n\2", string)
-    string = re.sub(r"(\\end{.*?}) *([^\n ])", r"\1\n\2", string)
-
-    string = re.sub(r"([^\n ]) *(\\\[)", r"\1\n\2", string)
-    string = re.sub(r"(\\\[) *([^\n ])", r"\1\n\2", string)
-
-    string = re.sub(r"([^\n ]) *(\\\])", r"\1\n\2", string)
-    string = re.sub(r"(\\\]) *([^\n ])", r"\1\n\2", string)
-    return string
 
 
 def _replace_centerline(string: str) -> str:
@@ -323,6 +255,75 @@ def _add_spaces_around_equality_sign(string: str) -> str:
 def _si_percentage(string: str) -> str:
     # match float like https://stackoverflow.com/a/12643073/353337
     string = re.sub(r"([+-]?([0-9]*[.])?[0-9]+)[ \t]*\\%", r"\\SI{\1}{\%}", string)
+    return string
+
+
+def _remove_trailing_whitespace(string: str) -> str:
+    return "\n".join([line.rstrip() for line in string.split("\n")])
+
+
+def _remove_multiple_spaces(string: str) -> str:
+    """Replaces multiple spaces by one, except after a newline."""
+    return re.sub("([^\n ])  +", r"\1 ", string)
+
+
+def _remove_multiple_newlines(string: str) -> str:
+    string = re.sub("\n\n\n\n+", "\n\n\n", string)
+    return string
+
+
+def _remove_whitespace_around_brackets(string: str) -> str:
+    string = re.sub("{[ \t]+", "{", string)
+    string = re.sub("[ \t]+}", "}", string)
+    string = re.sub("\\([ \t]+", "(", string)
+    string = re.sub("[ \t]+\\)", ")", string)
+    string = re.sub("[ \t]+\\\\right\\)", "\\\\right)", string)
+    return string
+
+
+def _add_space_after_single_subsuperscript(string: str) -> str:
+    string = re.sub(r"([\^])([^{\\])([^_\^\s\$})])", r"\1\2 \3", string)
+    return string
+
+
+def _remove_whitespace_before_punctuation(string: str) -> str:
+    string = re.sub(r"\s+\.", ".", string)
+    string = re.sub(r"\s+,", ",", string)
+    string = re.sub(r"\s+;", ";", string)
+    string = re.sub(r"\s+!", "!", string)
+    string = re.sub(r"\s+\?", "?", string)
+    return string
+
+
+def _add_nbsp_before_reference(string: str) -> str:
+    string = re.sub(r"\s+\\ref{", r"~\\ref{", string)
+    string = re.sub(r"\s+\\eqref{", r"~\\eqref{", string)
+    string = re.sub(r"\s+\\cite", r"~\\cite", string)
+    return string
+
+
+def _replace_double_nbsp(string: str) -> str:
+    return re.sub("~~", r"\\quad ", string)
+
+
+def _replace_nbsp_space(string: str) -> str:
+    string = re.sub("~ ", " ", string)
+    string = re.sub(" ~", " ", string)
+    return string
+
+
+def _add_linebreak_around_begin_end(string: str) -> str:
+    string = re.sub(r"([^\n ]) *(\\begin{.*?})", r"\1\n\2", string)
+    string = re.sub(r"(\\begin{.*?}) *([^\n ])", r"\1\n\2", string)
+
+    string = re.sub(r"([^\n ]) *(\\end{.*?})", r"\1\n\2", string)
+    string = re.sub(r"(\\end{.*?}) *([^\n ])", r"\1\n\2", string)
+
+    string = re.sub(r"([^\n ]) *(\\\[)", r"\1\n\2", string)
+    string = re.sub(r"(\\\[) *([^\n ])", r"\1\n\2", string)
+
+    string = re.sub(r"([^\n ]) *(\\\])", r"\1\n\2", string)
+    string = re.sub(r"(\\\]) *([^\n ])", r"\1\n\2", string)
     return string
 
 
