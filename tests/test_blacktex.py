@@ -32,9 +32,9 @@ def test_readme():
         # text mods:
         ("{\\em it's me!}", "\\emph{it's me!}"),
         # comments:
-        ("lorem  %some comment  \n %sit amet", "lorem"),
-        ("% lorem some comment  \n sit amet", " sit amet"),
-        ("A % lorem some comment  \n sit amet", "A\n sit amet"),
+        ("lorem  %some comment  \n %sit amet", "lorem "),
+        ("% lorem some comment  \n sit amet", "sit amet"),
+        ("A % lorem some comment  \n sit amet", "A sit amet"),
         ("{equation}%comment", "{equation}"),
         # multiple comment lines:
         ("A\n%\n%\nB", "A\nB"),
@@ -149,6 +149,7 @@ def test_readme():
     ],
 )
 def test_compare(string, out):
+    print(string)
     assert blacktex.clean(string) == out
 
 

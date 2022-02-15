@@ -1,26 +1,19 @@
 import re
 import warnings
 
+from pylatexenc.latexwalker import LatexCommentNode, LatexWalker
+
 
 def _remove_comments(string: str) -> str:
     """Remove comments unless the comment character is the last non-whitespace character
     in a line. (This is often used in macros etc.)
     """
-    # first remove all lines which are comments only
-    comment_lines = []
-    lines = string.split("\n")
-    for k, line in enumerate(lines):
-        sline = line.strip()
-        if len(sline) > 0 and sline[0] == "%":
-            comment_lines.append(k)
-    string = "\n".join([lines[k] for k in range(len(lines)) if k not in comment_lines])
-
-    # https://stackoverflow.com/a/2319116/353337
-    # https://stackoverflow.com/a/24209736/353337
-    string = re.sub("[ \t]*(?<!\\\\)%.+\n", "\n", string)
-    # same with EOF
-    string = re.sub("[ \t]*(?<!\\\\)%.+$", "", string)
-    return string
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    filtered_nodes = [
+        item for item in nodelist if not isinstance(item, LatexCommentNode)
+    ]
+    return "".join([item.latex_verbatim() for item in filtered_nodes])
 
 
 def _remove_trailing_whitespace(string: str) -> str:
@@ -207,7 +200,7 @@ def _add_linebreak_after_double_backslash(string: str) -> str:
 def _add_backslash_for_keywords(string: str) -> str:
     insert = []
     for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
-        p = re.compile(fr"[^A-Za-z]{keyword}[^A-Za-z]")
+        p = re.compile(rf"[^A-Za-z]{keyword}[^A-Za-z]")
         locations = [m.start() for m in p.finditer(string)]
         for loc in locations:
             if string[loc] != "\\":
