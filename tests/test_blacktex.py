@@ -20,7 +20,7 @@ import blacktex
         # multiple comment lines:
         ("A\n%\n%\nB", "A\nB"),
         # comment last:
-        ("somemacro{%\n" "foobar% \n" "}", "somemacro{%\nfoobar%\n}"),
+        ("somemacro{%\nfoobar% \n}", "somemacro{foobar}"),
         # trailing whitespace:
         ("lorem    \n sit amet", "lorem\n sit amet"),
         # obsolete text mod:

@@ -12,16 +12,30 @@ from pylatexenc.latexwalker import (
 from pylatexenc.macrospec import ParsedMacroArgs
 
 
+def _traverse_tree(nodelist: list, fun: Callable):
+    nodelist = [fun(node) for node in nodelist if node is not None]
+
+    for node in nodelist:
+        if hasattr(node, "nodelist"):
+            node.nodelist = _traverse_tree(node.nodelist, fun)
+
+    return nodelist
+
+
 def _remove_comments(string: str) -> str:
     """Remove comments unless the comment character is the last non-whitespace character
     in a line. (This is often used in macros etc.)
     """
+
+    def _rm(node):
+        if isinstance(node, LatexCommentNode):
+            return None
+        return node
+
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    filtered_nodes = [
-        node for node in nodelist if not isinstance(node, LatexCommentNode)
-    ]
-    return "".join([node.latex_verbatim() for node in filtered_nodes])
+    nodelist = _traverse_tree(nodelist, _rm)
+    return nodelist_to_latex(nodelist)
 
 
 def _remove_trailing_whitespace(string: str) -> str:
@@ -173,13 +187,6 @@ def _substitute_string_ranges(string: str, ranges, replacements) -> str:
     return string
 
 
-def _traverse_tree(nodelist: list, fun: Callable):
-    for k, node in enumerate(nodelist):
-        nodelist[k] = fun(node)
-        if hasattr(node, "nodelist"):
-            _traverse_tree(node.nodelist, fun)
-
-
 def _replace_over(string: str) -> str:
     def _replace(node):
         if isinstance(node, LatexGroupNode):
@@ -197,7 +204,7 @@ def _replace_over(string: str) -> str:
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
 
-    _traverse_tree(nodelist, _replace)
+    nodelist = _traverse_tree(nodelist, _replace)
 
     return nodelist_to_latex(nodelist)
 
