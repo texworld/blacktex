@@ -149,13 +149,6 @@ def test_compare(string, reference):
     assert result == reference
 
 
-def test_over_frac_warn():
-    input_string = "Some $2\\over 3^{4+x}$."
-    with pytest.warns(UserWarning):
-        out = blacktex.clean(input_string, keep_dollar=True)
-    assert out == "Some $2\\over 3^{4+x}$."
-
-
 def test_readme():
     input_string = (
         "Because   of $$a+b=c$$ ({\\it Pythogoras}),\n"
@@ -164,6 +157,7 @@ def test_readme():
     )
 
     out = blacktex.clean(input_string)
+    print(out)
     assert out == (
         "Because of\n"
         "\\[\n"

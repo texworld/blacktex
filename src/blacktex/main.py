@@ -1,5 +1,5 @@
 import re
-import warnings
+from typing import Callable
 
 from pylatexenc.latexwalker import (
     LatexCommentNode,
@@ -69,6 +69,17 @@ def _replace_dollar(string: str) -> str:
     return nodelist_to_latex(nodelist)
 
 
+def _macro(macroname, *nodelists):
+    """Creates a pylatexenc node that corresponds to \\macroname{nodelist}"""
+    return LatexMacroNode(
+        macroname=macroname,
+        nodeargd=ParsedMacroArgs(
+            argspec="{" * len(nodelists),
+            argnlist=[LatexGroupNode(nodelist=nodelist) for nodelist in nodelists],
+        ),
+    )
+
+
 def _replace_obsolete_text_mods(string: str) -> str:
     r"""Replace {\it foo} by \textit{foo} etc"""
     # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
@@ -98,13 +109,7 @@ def _replace_obsolete_text_mods(string: str) -> str:
             if isinstance(child0, LatexMacroNode):
                 for orig, repl in replacements:
                     if child0.macroname == orig:
-                        new_node = LatexMacroNode(
-                            macroname=repl,
-                            nodeargd=ParsedMacroArgs(
-                                argspec="{",
-                                argnlist=[LatexGroupNode(nodelist=node.nodelist[1:])],
-                            ),
-                        )
+                        new_node = _macro(repl, node.nodelist[1:])
                         break
         new_nodes.append(new_node)
 
@@ -168,68 +173,33 @@ def _substitute_string_ranges(string: str, ranges, replacements) -> str:
     return string
 
 
+def _traverse_tree(nodelist: list, fun: Callable):
+    for k, node in enumerate(nodelist):
+        nodelist[k] = fun(node)
+        if hasattr(node, "nodelist"):
+            _traverse_tree(node.nodelist, fun)
+
+
 def _replace_over(string: str) -> str:
-    if r"\over" in string:
-        w = LatexWalker(string)
-        nodelist, _, _ = w.get_latex_nodes(pos=0)
-        for node in nodelist:
-            print()
-            print(node)
-        exit(1)
+    def _replace(node):
+        if isinstance(node, LatexGroupNode):
+            k0 = None
+            for k, n2 in enumerate(node.nodelist):
+                if isinstance(n2, LatexMacroNode) and n2.macroname == "over":
+                    k0 = k
+                    break
 
-    p = re.compile(r"\\over[^a-z]")
-    locations = [m.start() for m in p.finditer(string)]
+            if k0 is not None:
+                # We found an \over. Create a \frac from the rest of the nodes.
+                return _macro("frac", node.nodelist[:k0], node.nodelist[k0 + 1 :])
+        return node
 
-    fracs = []
-    ranges = []
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
 
-    for loc in locations:
-        skip = False
+    _traverse_tree(nodelist, _replace)
 
-        # Starting from loc, search to the left for an open {
-        num_open_brackets = 1
-        k0 = loc - 1
-        while num_open_brackets > 0:
-            try:
-                char0 = string[k0]
-            except IndexError:
-                skip = True
-                break
-
-            if char0 == "{":
-                num_open_brackets -= 1
-            elif char0 == "}":
-                num_open_brackets += 1
-            k0 -= 1
-
-        if skip:
-            warning = (
-                "Could not convert \\over to \\frac at \n```\n"
-                + string[max(0, loc - 20) : loc + 24]
-                + "\n```\n"
-            )
-            warnings.warn(warning)
-            continue
-
-        numerator = string[k0 + 2 : loc].strip()
-
-        # Starting from loc+5, search to the right for an open }
-        num_open_brackets = 1
-        k1 = loc + 5
-        while num_open_brackets > 0:
-            if string[k1] == "}":
-                num_open_brackets -= 1
-            elif string[k1] == "{":
-                num_open_brackets += 1
-            k1 += 1
-        denominator = string[loc + 5 : k1 - 1].strip()
-
-        fracs.append((numerator, denominator))
-        ranges.append((k0 + 1, k1))
-
-    fracs = [f"\\frac{{{num}}}{{{den}}}" for num, den in fracs]
-
-    return _substitute_string_ranges(string, ranges, fracs)
+    return nodelist_to_latex(nodelist)
 
 
 def _add_linebreak_after_double_backslash(string: str) -> str:
@@ -363,7 +333,6 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
         out = _replace_dollar(out)
     out = _replace_punctuation_at_math_end(out)
     out = _replace_obsolete_text_mods(out)
-    out = _remove_whitespace_around_brackets(out)
     out = _add_space_after_single_subsuperscript(out)
     out = _replace_dots(out)
     out = _remove_whitespace_before_punctuation(out)
@@ -386,4 +355,5 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
     out = _add_spaces_around_equality_sign(out)
     out = _remove_multiple_newlines(out)
     out = _remove_multiple_spaces(out)
+    out = _remove_whitespace_around_brackets(out)
     return out
