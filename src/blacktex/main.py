@@ -1,7 +1,12 @@
 import re
 import warnings
 
-from pylatexenc.latexwalker import LatexCommentNode, LatexWalker
+from pylatexenc.latexwalker import (
+    LatexCommentNode,
+    LatexMathNode,
+    LatexWalker,
+    nodelist_to_latex,
+)
 
 
 def _remove_comments(string: str) -> str:
@@ -11,9 +16,9 @@ def _remove_comments(string: str) -> str:
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
     filtered_nodes = [
-        item for item in nodelist if not isinstance(item, LatexCommentNode)
+        node for node in nodelist if not isinstance(node, LatexCommentNode)
     ]
-    return "".join([item.latex_verbatim() for item in filtered_nodes])
+    return "".join([node.latex_verbatim() for node in filtered_nodes])
 
 
 def _remove_trailing_whitespace(string: str) -> str:
@@ -41,38 +46,24 @@ def _remove_whitespace_around_brackets(string: str) -> str:
 
 def _replace_dollar_dollar(string: str) -> str:
     """Replace $$...$$ by \\[...\\]."""
-    p = re.compile(r"\$\$")
-    locations = [m.start() for m in p.finditer(string)]
-    assert len(locations) % 2 == 0
-
-    k = 0
-    ranges = []
-    replacements = []
-    while k < len(locations):
-        ranges.append((locations[k], locations[k + 1] + 2))
-        replacements.append("\\[" + string[locations[k] + 2 : locations[k + 1]] + "\\]")
-        k += 2
-
-    return _substitute_string_ranges(string, ranges, replacements)
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    for node in nodelist:
+        if isinstance(node, LatexMathNode):
+            if node.delimiters == ("$$", "$$"):
+                node.delimiters = ("\\[", "\\]")
+    return nodelist_to_latex(nodelist)
 
 
 def _replace_dollar(string: str) -> str:
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
-    # (?<!\\\\) checks there is no backslash before (negative lookbehind)
-    # (?:\\\\{2})* matches all even numbers of backslashes
-    p = re.compile(r"(?<!\\)(?:\\{2})*\$")
-    locations = [m.end() for m in p.finditer(string)]
-    assert len(locations) % 2 == 0
-
-    k = 0
-    ranges = []
-    replacements = []
-    while k < len(locations):
-        ranges.append((locations[k] - 1, locations[k + 1]))
-        replacements.append("\\(" + string[locations[k] : locations[k + 1] - 1] + "\\)")
-        k += 2
-
-    return _substitute_string_ranges(string, ranges, replacements)
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    for node in nodelist:
+        if isinstance(node, LatexMathNode):
+            if node.delimiters == ("$", "$"):
+                node.delimiters = ("\\(", "\\)")
+    return nodelist_to_latex(nodelist)
 
 
 def _replace_obsolete_text_mods(string: str) -> str:

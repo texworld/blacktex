@@ -3,25 +3,6 @@ import pytest
 import blacktex
 
 
-def test_readme():
-    input_string = (
-        "Because   of $$a+b=c$$ ({\\it Pythogoras}),\n"
-        "% @johnny remember to insert name,\n"
-        "and $y=2^ng$ with $n=1,...,10$, we have ${\\Gamma \\over 2}=8.$"
-    )
-
-    out = blacktex.clean(input_string)
-    assert out == (
-        "Because of\n"
-        "\\[\n"
-        "a+b = c\n"
-        "\\]\n"
-        "(\\textit{Pythogoras}),\n"
-        "and \\(y = 2^n g\\) with \\(n = 1,\\dots,10\\), we have "
-        "\\(\\frac{\\Gamma}{2} = 8\\)."
-    )
-
-
 @pytest.mark.parametrize(
     "string, out",
     [
@@ -119,7 +100,10 @@ def test_readme():
             "A\n\\begin{align*}\na+b\n\\end{align*}\nF",
         ),
         # env label:
-        ("A\n\\begin{lemma}\n\\label{lvalpp}", "A\n\\begin{lemma}\\label{lvalpp}"),
+        (
+            "A\n\\begin{lemma}\n\\label{lvalpp}\\end{lemma}",
+            "A\n\\begin{lemma}\\label{lvalpp}\n\\end{lemma}",
+        ),
         ("A\n\\section{Intro}\n\\label{lvalpp}", "A\n\\section{Intro}\\label{lvalpp}"),
         (
             "A\n\\subsection{Intro}\n\\label{lvalpp}",
@@ -131,14 +115,23 @@ def test_readme():
         ("A : = b+c", "A \\coloneqq b+c"),
         ("b+c =  : A", "b+c \\eqqcolon A"),
         # tabular column spec:
-        ("\\begin{tabular} \n {ccc}\ncontent", "\\begin{tabular}{ccc}\ncontent"),
+        (
+            "\\begin{tabular} \n {ccc}\ncontent\\end{tabular}",
+            "\\begin{tabular}{ccc}\ncontent\n\\end{tabular}",
+        ),
         # env option spec:
-        ("\\begin{table} \n [h!]G", "\\begin{table}[h!]\nG"),
-        ("\\begin{table}   [h!]G", "\\begin{table}[h!]\nG"),
-        ("\\begin{table}   [h!]\nG", "\\begin{table}[h!]\nG"),
-        ("\\begin{table} \n [h!]G", "\\begin{table}[h!]\nG"),
-        ("\\begin{table} \n [h!]\\label{foo}", "\\begin{table}[h!]\\label{foo}"),
-        ("\\begin{table} \n [h!]\\label{foo}\nG", "\\begin{table}[h!]\\label{foo}\nG"),
+        ("\\begin{table} \n [h!]G\\end{table}", "\\begin{table}[h!]\nG\n\\end{table}"),
+        ("\\begin{table}   [h!]G\\end{table}", "\\begin{table}[h!]\nG\n\\end{table}"),
+        ("\\begin{table}   [h!]\nG\\end{table}", "\\begin{table}[h!]\nG\n\\end{table}"),
+        ("\\begin{table} \n [h!]G\\end{table}", "\\begin{table}[h!]\nG\n\\end{table}"),
+        (
+            "\\begin{table} \n [h!]\\label{foo}\\end{table}",
+            "\\begin{table}[h!]\\label{foo}\n\\end{table}",
+        ),
+        (
+            "\\begin{table} \n [h!]\\label{foo}\nG\\end{table}",
+            "\\begin{table}[h!]\\label{foo}\nG\n\\end{table}",
+        ),
         # space around operators:
         ("a+b=c", "a+b = c"),
         ("a+b&=&c", "a+b &=& c"),
@@ -149,7 +142,9 @@ def test_readme():
     ],
 )
 def test_compare(string, out):
-    print(string)
+    print(repr(string))
+    print(repr(blacktex.clean(string)))
+    print(repr(out))
     assert blacktex.clean(string) == out
 
 
@@ -158,3 +153,22 @@ def test_over_frac_warn():
     with pytest.warns(UserWarning):
         out = blacktex.clean(input_string, keep_dollar=True)
     assert out == "Some $2\\over 3^{4+x}$."
+
+
+def test_readme():
+    input_string = (
+        "Because   of $$a+b=c$$ ({\\it Pythogoras}),\n"
+        "% @johnny remember to insert name,\n"
+        "and $y=2^ng$ with $n=1,...,10$, we have ${\\Gamma \\over 2}=8.$"
+    )
+
+    out = blacktex.clean(input_string)
+    assert out == (
+        "Because of\n"
+        "\\[\n"
+        "a+b = c\n"
+        "\\]\n"
+        "(\\textit{Pythogoras}),\n"
+        "and \\(y = 2^n g\\) with \\(n = 1,\\dots,10\\), we have "
+        "\\(\\frac{\\Gamma}{2} = 8\\)."
+    )
