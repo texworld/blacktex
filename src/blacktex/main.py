@@ -3,6 +3,7 @@ import warnings
 
 from pylatexenc.latexwalker import (
     LatexCommentNode,
+    LatexMacroNode,
     LatexMathNode,
     LatexWalker,
     nodelist_to_latex,
@@ -67,6 +68,34 @@ def _replace_dollar(string: str) -> str:
 
 
 def _replace_obsolete_text_mods(string: str) -> str:
+    # TODO keep an eye on <https://github.com/phfaist/pylatexenc/issues/79> to
+    # see how to instantiate LatexMacroNode
+    # if r"\it" in string:
+    #     w = LatexWalker(string)
+    #     nodelist, _, _ = w.get_latex_nodes(pos=0)
+    #     for node in nodelist:
+    #         print()
+    #         print(node)
+    #         if isinstance(node, LatexGroupNode):
+    #             child0 = node.nodelist[0]
+    #             if isinstance(child0, LatexMacroNode) and child0.macroname == "it":
+    #                 new_node = LatexMacroNode("textit", nodeargd=node.nodelist[1:])
+    #                 print()
+    #                 print("xx", new_node)
+    #                 print(nodelist_to_latex([new_node]))
+
+    #     print()
+    #     print()
+    #     print()
+    #     s2 = "lorem \\textit{ipsum dolor} sit amet"
+    #     w = LatexWalker(s2)
+    #     nodelist, _, _ = w.get_latex_nodes(pos=0)
+    #     for node in nodelist:
+    #         print()
+    #         print(node)
+
+    #     exit(1)
+
     # Replace {\it foo} by \textit{foo}. If a letter directly precedes the curly
     # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
     string = re.sub(r"([^a-zA-Z]){\\(bf|it|rm|sc|sf|sl|tt) ", r"\1\\text\2{", string)
@@ -83,8 +112,14 @@ def _add_space_after_single_subsuperscript(string: str) -> str:
 
 
 def _replace_dots(string: str) -> str:
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    for node in nodelist:
+        if isinstance(node, LatexMacroNode) and node.macroname == "cdots":
+            node.macroname = "dots"
+    string = nodelist_to_latex(nodelist)
+
     string = re.sub(r"\.\.\.", r"\\dots", string)
-    string = re.sub(r",\\cdots,", r",\\dots,", string)
     return string
 
 

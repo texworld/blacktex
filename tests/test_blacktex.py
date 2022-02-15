@@ -4,7 +4,7 @@ import blacktex
 
 
 @pytest.mark.parametrize(
-    "string, out",
+    "string, reference",
     [
         # dollar replacement:
         ("a $a + b = c$ b", r"a \(a + b = c\) b"),
@@ -141,11 +141,12 @@ import blacktex
         ("25\\% gain", "\\SI{25}{\\%} gain"),
     ],
 )
-def test_compare(string, out):
+def test_compare(string, reference):
     print(repr(string))
-    print(repr(blacktex.clean(string)))
-    print(repr(out))
-    assert blacktex.clean(string) == out
+    result = blacktex.clean(string)
+    print(repr(result))
+    print(repr(reference))
+    assert result == reference
 
 
 def test_over_frac_warn():
