@@ -64,7 +64,7 @@ import blacktex
         # double nbsp:
         ("Some~~text.", "Some\\quad text."),
         # \over to \frac:
-        ("{2\\over 3^{4+x}}", "\\frac{2}{3^{4+x}}"),
+        ("a{b^{1+y} 2\\over 3^{4+x}}c", "a\\frac{b^{1+y} 2}{3^{4+x}}c"),
         ("{\\pi \\over4}", "\\frac{\\pi}{4}"),
         # overline warn:
         ("\\overline", "\\overline"),

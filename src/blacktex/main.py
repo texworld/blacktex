@@ -3,11 +3,13 @@ import warnings
 
 from pylatexenc.latexwalker import (
     LatexCommentNode,
+    LatexGroupNode,
     LatexMacroNode,
     LatexMathNode,
     LatexWalker,
     nodelist_to_latex,
 )
+from pylatexenc.macrospec import ParsedMacroArgs
 
 
 def _remove_comments(string: str) -> str:
@@ -68,42 +70,45 @@ def _replace_dollar(string: str) -> str:
 
 
 def _replace_obsolete_text_mods(string: str) -> str:
-    # TODO keep an eye on <https://github.com/phfaist/pylatexenc/issues/79> to
-    # see how to instantiate LatexMacroNode
-    # if r"\it" in string:
-    #     w = LatexWalker(string)
-    #     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    #     for node in nodelist:
-    #         print()
-    #         print(node)
-    #         if isinstance(node, LatexGroupNode):
-    #             child0 = node.nodelist[0]
-    #             if isinstance(child0, LatexMacroNode) and child0.macroname == "it":
-    #                 new_node = LatexMacroNode("textit", nodeargd=node.nodelist[1:])
-    #                 print()
-    #                 print("xx", new_node)
-    #                 print(nodelist_to_latex([new_node]))
-
-    #     print()
-    #     print()
-    #     print()
-    #     s2 = "lorem \\textit{ipsum dolor} sit amet"
-    #     w = LatexWalker(s2)
-    #     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    #     for node in nodelist:
-    #         print()
-    #         print(node)
-
-    #     exit(1)
-
-    # Replace {\it foo} by \textit{foo}. If a letter directly precedes the curly
+    r"""Replace {\it foo} by \textit{foo} etc"""
     # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
-    string = re.sub(r"([^a-zA-Z]){\\(bf|it|rm|sc|sf|sl|tt) ", r"\1\\text\2{", string)
-    # https://tex.stackexchange.com/a/25914/13262:
-    # [\em] May be useful when defining macros. In continuous text \emph{...} should be
-    # preferred to \em.
-    string = string.replace(r"{\em ", r"\emph{")
-    return string
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+
+    replacements = [
+        ("it", "textit"),
+        ("bf", "textbf"),
+        ("rm", "textrm"),
+        ("sc", "textsc"),
+        ("sf", "textsf"),
+        ("sl", "textsl"),
+        ("tt", "texttt"),
+        # https://tex.stackexchange.com/a/25914/13262:
+        # [\em] May be useful when defining macros. In continuous text
+        # \emph{...} should be preferred to \em.
+        ("em", "emph"),
+    ]
+
+    new_nodes = []
+    for node in nodelist:
+        new_node = node
+        if isinstance(node, LatexGroupNode):
+            # See if the first child in the group is a macro, e.g., {\it ...}
+            child0 = node.nodelist[0]
+            if isinstance(child0, LatexMacroNode):
+                for orig, repl in replacements:
+                    if child0.macroname == orig:
+                        new_node = LatexMacroNode(
+                            macroname=repl,
+                            nodeargd=ParsedMacroArgs(
+                                argspec="{",
+                                argnlist=[LatexGroupNode(nodelist=node.nodelist[1:])],
+                            ),
+                        )
+                        break
+        new_nodes.append(new_node)
+
+    return nodelist_to_latex(new_nodes)
 
 
 def _add_space_after_single_subsuperscript(string: str) -> str:
@@ -164,6 +169,14 @@ def _substitute_string_ranges(string: str, ranges, replacements) -> str:
 
 
 def _replace_over(string: str) -> str:
+    if r"\over" in string:
+        w = LatexWalker(string)
+        nodelist, _, _ = w.get_latex_nodes(pos=0)
+        for node in nodelist:
+            print()
+            print(node)
+        exit(1)
+
     p = re.compile(r"\\over[^a-z]")
     locations = [m.start() for m in p.finditer(string)]
 
