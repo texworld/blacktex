@@ -14,12 +14,14 @@ from pylatexenc.latexwalker import (
 from pylatexenc.macrospec import ParsedMacroArgs
 
 
-def _traverse_tree(nodelist: list, fun: Callable):
-    nodelist = [fun(node) for node in nodelist if node is not None]
+def _traverse_tree(nodelist: list, fun: Callable, is_math_mode: bool = False):
+    nodelist = [fun(node, is_math_mode) for node in nodelist if node is not None]
 
     for node in nodelist:
         if hasattr(node, "nodelist"):
-            node.nodelist = _traverse_tree(node.nodelist, fun)
+            node.nodelist = _traverse_tree(
+                node.nodelist, fun, is_math_mode | isinstance(node, LatexMathNode)
+            )
 
     return nodelist
 
@@ -39,7 +41,7 @@ def _remove_comments(string: str) -> str:
     """Remove comments."""
     # TODO unless the comment character is the last non-whitespace character in
     # a line. (This is often used in macros etc.)
-    def _rm(node):
+    def _rm(node, _):
         if isinstance(node, LatexCommentNode):
             return None
         return node
@@ -53,7 +55,7 @@ def _remove_comments(string: str) -> str:
 def _replace_dollar_dollar(string: str) -> str:
     """Replace $$...$$ by \\[...\\]."""
 
-    def _repl(node):
+    def _repl(node, _):
         if isinstance(node, LatexMathNode):
             if node.delimiters == ("$$", "$$"):
                 node.delimiters = ("\\[", "\\]")
@@ -68,7 +70,7 @@ def _replace_dollar_dollar(string: str) -> str:
 def _replace_dollar(string: str) -> str:
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
 
-    def _repl(node):
+    def _repl(node, _):
         if isinstance(node, LatexMathNode):
             if node.delimiters == ("$", "$"):
                 node.delimiters = ("\\(", "\\)")
@@ -97,7 +99,7 @@ def _replace_obsolete_text_mods(string: str) -> str:
         ("em", "emph"),
     ]
 
-    def _repl(node):
+    def _repl(node, _):
         if not isinstance(node, LatexGroupNode):
             return node
         # See if the first child in the group is a macro, e.g., {\it ...}
@@ -119,7 +121,7 @@ def _replace_obsolete_text_mods(string: str) -> str:
 
 
 def _replace_dots(string: str) -> str:
-    def _repl(node):
+    def _repl(node, _):
         if isinstance(node, LatexMacroNode) and node.macroname == "cdots":
             node.macroname = "dots"
         if isinstance(node, LatexCharsNode) and "..." in node.chars:
@@ -133,7 +135,7 @@ def _replace_dots(string: str) -> str:
 
 
 def _replace_over(string: str) -> str:
-    def _replace(node):
+    def _replace(node, _):
         if isinstance(node, LatexGroupNode):
             k0 = None
             for k, n2 in enumerate(node.nodelist):
@@ -153,7 +155,7 @@ def _replace_over(string: str) -> str:
 
 
 def _replace_def_by_newcommand(string: str) -> str:
-    def _repl(node):
+    def _repl(node, _):
         if isinstance(node, LatexMacroNode):
             if node.macroname == "def":
                 node.macroname = "newcommand"
@@ -170,32 +172,20 @@ def _replace_punctuation_at_math_end(string: str) -> str:
     return re.sub(r"([\.,;!\?])\\\)", r"\)\1", string)
 
 
-def _substitute_string_ranges(string: str, ranges, replacements) -> str:
-    if ranges:
-        lst = [string[: ranges[0][0]]]
-        for k, replacement in enumerate(replacements[:-1]):
-            lst += [replacement, string[ranges[k][1] : ranges[k + 1][0]]]
-        lst += [replacements[-1], string[ranges[-1][1] :]]
-        string = "".join(lst)
-    return string
-
-
-def _add_linebreak_after_double_backslash(string: str) -> str:
-    return re.sub(r"\\\\([^\n])", r"\\\\\n\1", string)
-
-
 def _add_backslash_for_keywords(string: str) -> str:
-    insert = []
-    for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
-        p = re.compile(rf"[^A-Za-z]{keyword}[^A-Za-z]")
-        locations = [m.start() for m in p.finditer(string)]
-        for loc in locations:
-            if string[loc] != "\\":
-                insert.append(loc)
+    def _repl(node, is_math_mode):
+        if not is_math_mode:
+            return node
+        if not isinstance(node, LatexCharsNode):
+            return node
+        for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
+            node.chars = node.chars.replace(keyword, f"\\{keyword}")
+        return node
 
-    return _substitute_string_ranges(
-        string, [(i + 1, i + 1) for i in insert], len(insert) * ["\\"]
-    )
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
+    return nodelist_to_latex(nodelist)
 
 
 def _replace_centerline(string: str) -> str:
@@ -203,7 +193,7 @@ def _replace_centerline(string: str) -> str:
 
 
 def _replace_eqnarray(string: str) -> str:
-    def _repl(node):
+    def _repl(node, _):
         if isinstance(node, LatexEnvironmentNode):
             # Also set envname, should be removed at some point
             # TODO https://github.com/phfaist/pylatexenc/issues/81
@@ -218,19 +208,6 @@ def _replace_eqnarray(string: str) -> str:
     nodelist, _, _ = w.get_latex_nodes(pos=0)
     nodelist = _traverse_tree(nodelist, _repl)
     return nodelist_to_latex(nodelist)
-
-
-def _put_spec_on_same_line_as_environment(string: str) -> str:
-    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])\n", r"\1\2", string)
-    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])([^\n])", r"\1\2\n\3", string)
-    return string
-
-
-def _put_label_on_same_line_as_environment(string: str) -> str:
-    out = re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
-    out = re.sub(r"(\\section{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
-    out = re.sub(r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
-    return out
 
 
 def _replace_colon_equal_by_coloneqq(string: str) -> str:
@@ -325,6 +302,23 @@ def _add_linebreak_around_begin_end(string: str) -> str:
     string = re.sub(r"([^\n ]) *(\\\])", r"\1\n\2", string)
     string = re.sub(r"(\\\]) *([^\n ])", r"\1\n\2", string)
     return string
+
+
+def _put_spec_on_same_line_as_environment(string: str) -> str:
+    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])\n", r"\1\2", string)
+    string = re.sub(r"(\\begin{.*?})\s*(\[.*?\])([^\n])", r"\1\2\n\3", string)
+    return string
+
+
+def _put_label_on_same_line_as_environment(string: str) -> str:
+    out = re.sub(r"(\\begin{.*?})(\[.*?])?\s+(\\label{.*?})(\n)?", r"\1\2\3\4", string)
+    out = re.sub(r"(\\section{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
+    out = re.sub(r"(\\subsection{.*?})\s+(\\label{.*?})(\n)?", r"\1\2\3", out)
+    return out
+
+
+def _add_linebreak_after_double_backslash(string: str) -> str:
+    return re.sub(r"\\\\([^\n])", r"\\\\\n\1", string)
 
 
 def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -> str:
