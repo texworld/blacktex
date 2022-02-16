@@ -161,11 +161,15 @@ def _add_space_after_single_subsuperscript(node, _):
     return node
 
 
-def _remove_whitespace_before_punctuation(node, is_math_mode):
+def _remove_whitespace_before_punctuation(node, _):
     if not isinstance(node, LatexCharsNode):
         return node
     node.chars = re.sub(r"\s+([\.,;!\?\":])", r"\1", node.chars)
     return node
+
+
+def _replace_double_nbsp(string: str) -> str:
+    return re.sub("~~", r"\\quad ", string)
 
 
 def _replace_centerline(string: str) -> str:
@@ -206,11 +210,11 @@ def _remove_multiple_newlines(string: str) -> str:
 
 
 def _remove_whitespace_around_brackets(string: str) -> str:
-    string = re.sub("{[ \t]+", "{", string)
-    string = re.sub("[ \t]+}", "}", string)
-    string = re.sub("\\([ \t]+", "(", string)
-    string = re.sub("[ \t]+\\)", ")", string)
-    string = re.sub("[ \t]+\\\\right\\)", "\\\\right)", string)
+    string = re.sub(r"{[ \t]+", "{", string)
+    string = re.sub(r"[ \t]+}", "}", string)
+    string = re.sub(r"\([ \t]+", "(", string)
+    string = re.sub(r"[ \t]+\)", ")", string)
+    string = re.sub(r"[ \t]+\\right\)", r"\\right)", string)
     return string
 
 
@@ -219,10 +223,6 @@ def _add_nbsp_before_reference(string: str) -> str:
     string = re.sub(r"\s+\\eqref{", r"~\\eqref{", string)
     string = re.sub(r"\s+\\cite", r"~\\cite", string)
     return string
-
-
-def _replace_double_nbsp(string: str) -> str:
-    return re.sub("~~", r"\\quad ", string)
 
 
 def _replace_nbsp_space(string: str) -> str:
