@@ -146,7 +146,7 @@ def _replace_eqnarray(node, _):
     return node
 
 
-def _replace_colon_equal_by_coloneqq(node, is_math_mode):
+def _replace_colon_equal_by_coloneqq(node, _):
     if not isinstance(node, LatexCharsNode):
         return node
     node.chars = re.sub(r":\s*=", r"\\coloneqq ", node.chars)
@@ -154,12 +154,22 @@ def _replace_colon_equal_by_coloneqq(node, is_math_mode):
     return node
 
 
+def _add_space_after_single_subsuperscript(node, _):
+    if not isinstance(node, LatexCharsNode):
+        return node
+    node.chars = re.sub(r"([\^])([^{\\])([^_\^\s\$})])", r"\1\2 \3", node.chars)
+    return node
+
+
+def _remove_whitespace_before_punctuation(node, is_math_mode):
+    if not isinstance(node, LatexCharsNode):
+        return node
+    node.chars = re.sub(r"\s+([\.,;!\?\":])", r"\1", node.chars)
+    return node
+
+
 def _replace_centerline(string: str) -> str:
     return re.sub(r"\\centerline{", r"{\\centering ", string)
-
-
-def _remove_space_before_tabular_column_specification(string: str) -> str:
-    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2", string)
 
 
 def _add_spaces_around_equality_sign(string: str) -> str:
@@ -175,6 +185,10 @@ def _si_percentage(string: str) -> str:
     # match float like https://stackoverflow.com/a/12643073/353337
     string = re.sub(r"([+-]?([0-9]*[.])?[0-9]+)[ \t]*\\%", r"\\SI{\1}{\%}", string)
     return string
+
+
+def _remove_space_before_tabular_column_specification(string: str) -> str:
+    return re.sub(r"(\\begin{tabular})\s*({.*?})", r"\1\2", string)
 
 
 def _remove_trailing_whitespace(string: str) -> str:
@@ -197,20 +211,6 @@ def _remove_whitespace_around_brackets(string: str) -> str:
     string = re.sub("\\([ \t]+", "(", string)
     string = re.sub("[ \t]+\\)", ")", string)
     string = re.sub("[ \t]+\\\\right\\)", "\\\\right)", string)
-    return string
-
-
-def _add_space_after_single_subsuperscript(string: str) -> str:
-    string = re.sub(r"([\^])([^{\\])([^_\^\s\$})])", r"\1\2 \3", string)
-    return string
-
-
-def _remove_whitespace_before_punctuation(string: str) -> str:
-    string = re.sub(r"\s+\.", ".", string)
-    string = re.sub(r"\s+,", ",", string)
-    string = re.sub(r"\s+;", ";", string)
-    string = re.sub(r"\s+!", "!", string)
-    string = re.sub(r"\s+\?", "?", string)
     return string
 
 
@@ -287,6 +287,8 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
         _add_backslash_for_keywords,
         _replace_eqnarray,
         _replace_colon_equal_by_coloneqq,
+        _add_space_after_single_subsuperscript,
+        _remove_whitespace_before_punctuation,
     ]
     #
     w = LatexWalker(out)
@@ -295,8 +297,6 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
     out = nodelist_to_latex(nodelist)
 
     out = _replace_punctuation_at_math_end(out)
-    out = _add_space_after_single_subsuperscript(out)
-    out = _remove_whitespace_before_punctuation(out)
     out = _add_nbsp_before_reference(out)
     out = _replace_double_nbsp(out)
     out = _replace_nbsp_space(out)
