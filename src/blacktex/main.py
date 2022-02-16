@@ -94,100 +94,64 @@ def _replace_obsolete_text_mods(node, _):
     return node
 
 
-def _replace_dots(string: str) -> str:
-    def _repl(node, _):
-        if isinstance(node, LatexMacroNode) and node.macroname == "cdots":
-            node.macroname = "dots"
-        if isinstance(node, LatexCharsNode) and "..." in node.chars:
-            node.chars = node.chars.replace("...", r"\dots")
+def _replace_dots(node, _):
+    if isinstance(node, LatexMacroNode) and node.macroname == "cdots":
+        node.macroname = "dots"
+    if isinstance(node, LatexCharsNode) and "..." in node.chars:
+        node.chars = node.chars.replace("...", r"\dots")
+    return node
+
+
+def _replace_over(node, _):
+    if isinstance(node, LatexGroupNode):
+        k0 = None
+        for k, n2 in enumerate(node.nodelist):
+            if isinstance(n2, LatexMacroNode) and n2.macroname == "over":
+                k0 = k
+                break
+
+        if k0 is not None:
+            # We found an \over. Create a \frac from the rest of the nodes.
+            return _macro("frac", node.nodelist[:k0], node.nodelist[k0 + 1 :])
+    return node
+
+
+def _replace_def_by_newcommand(node, _):
+    if isinstance(node, LatexMacroNode):
+        if node.macroname == "def":
+            node.macroname = "newcommand"
+    return node
+
+
+def _add_backslash_for_keywords(node, is_math_mode):
+    if not is_math_mode:
         return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, [_repl])
-    return nodelist_to_latex(nodelist)
-
-
-def _replace_over(string: str) -> str:
-    def _replace(node, _):
-        if isinstance(node, LatexGroupNode):
-            k0 = None
-            for k, n2 in enumerate(node.nodelist):
-                if isinstance(n2, LatexMacroNode) and n2.macroname == "over":
-                    k0 = k
-                    break
-
-            if k0 is not None:
-                # We found an \over. Create a \frac from the rest of the nodes.
-                return _macro("frac", node.nodelist[:k0], node.nodelist[k0 + 1 :])
+    if not isinstance(node, LatexCharsNode):
         return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, [_replace])
-    return nodelist_to_latex(nodelist)
+    for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
+        node.chars = node.chars.replace(keyword, f"\\{keyword}")
+    return node
 
 
-def _replace_def_by_newcommand(string: str) -> str:
-    def _repl(node, _):
-        if isinstance(node, LatexMacroNode):
-            if node.macroname == "def":
-                node.macroname = "newcommand"
+def _replace_eqnarray(node, _):
+    if isinstance(node, LatexEnvironmentNode):
+        # Also set envname, should be removed at some point
+        # TODO https://github.com/phfaist/pylatexenc/issues/81
+        if node.environmentname == "eqnarray":
+            node.environmentname = "align"
+            node.envname = "align"
+        elif node.environmentname == "eqnarray*":
+            node.environmentname = "align*"
+            node.envname = "align*"
+    return node
+
+
+def _replace_colon_equal_by_coloneqq(node, is_math_mode):
+    if not isinstance(node, LatexCharsNode):
         return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, [_repl])
-    return nodelist_to_latex(nodelist)
-
-
-def _add_backslash_for_keywords(string: str) -> str:
-    def _repl(node, is_math_mode):
-        if not is_math_mode:
-            return node
-        if not isinstance(node, LatexCharsNode):
-            return node
-        for keyword in ["max", "min", "log", "sin", "cos", "exp"]:
-            node.chars = node.chars.replace(keyword, f"\\{keyword}")
-        return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, [_repl])
-    return nodelist_to_latex(nodelist)
-
-
-def _replace_eqnarray(string: str) -> str:
-    def _repl(node, _):
-        if isinstance(node, LatexEnvironmentNode):
-            # Also set envname, should be removed at some point
-            # TODO https://github.com/phfaist/pylatexenc/issues/81
-            if node.environmentname == "eqnarray":
-                node.environmentname = "align"
-                node.envname = "align"
-            elif node.environmentname == "eqnarray*":
-                node.environmentname = "align*"
-                node.envname = "align*"
-        return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, [_repl])
-    return nodelist_to_latex(nodelist)
-
-
-def _replace_colon_equal_by_coloneqq(string: str) -> str:
-    def _repl(node, is_math_mode):
-        if not isinstance(node, LatexCharsNode):
-            return node
-        node.chars = re.sub(r":\s*=", r"\\coloneqq ", node.chars)
-        node.chars = re.sub(r"=\s*:", r"\\eqqcolon ", node.chars)
-        return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, [_repl])
-    return nodelist_to_latex(nodelist)
+    node.chars = re.sub(r":\s*=", r"\\coloneqq ", node.chars)
+    node.chars = re.sub(r"=\s*:", r"\\eqqcolon ", node.chars)
+    return node
 
 
 def _replace_centerline(string: str) -> str:
@@ -315,7 +279,15 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
     funs.append(_replace_dollar_dollar)
     if not keep_dollar:
         funs.append(_replace_dollar)
-    funs.append(_replace_obsolete_text_mods)
+    funs += [
+        _replace_obsolete_text_mods,
+        _replace_dots,
+        _replace_over,
+        _replace_def_by_newcommand,
+        _add_backslash_for_keywords,
+        _replace_eqnarray,
+        _replace_colon_equal_by_coloneqq,
+    ]
     #
     w = LatexWalker(out)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
@@ -324,22 +296,16 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
 
     out = _replace_punctuation_at_math_end(out)
     out = _add_space_after_single_subsuperscript(out)
-    out = _replace_dots(out)
     out = _remove_whitespace_before_punctuation(out)
     out = _add_nbsp_before_reference(out)
     out = _replace_double_nbsp(out)
     out = _replace_nbsp_space(out)
-    out = _replace_over(out)
     out = _si_percentage(out)
     out = _add_linebreak_after_double_backslash(out)
-    out = _add_backslash_for_keywords(out)
-    out = _replace_def_by_newcommand(out)
     out = _add_linebreak_around_begin_end(out)
     out = _replace_centerline(out)
-    out = _replace_eqnarray(out)
     out = _put_spec_on_same_line_as_environment(out)
     out = _put_label_on_same_line_as_environment(out)
-    out = _replace_colon_equal_by_coloneqq(out)
     out = _remove_space_before_tabular_column_specification(out)
     out = _add_spaces_around_equality_sign(out)
     out = _remove_multiple_newlines(out)
