@@ -54,17 +54,15 @@ def _remove_comments(node, *_):
 
 def _replace_dollar_dollar(node, *_):
     """Replace $$...$$ by \\[...\\]."""
-    if isinstance(node, LatexMathNode):
-        if node.delimiters == ("$$", "$$"):
-            node.delimiters = ("\\[", "\\]")
+    if isinstance(node, LatexMathNode) and node.delimiters == ("$$", "$$"):
+        node.delimiters = ("\\[", "\\]")
     return node
 
 
 def _replace_dollar(node, *_):
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
-    if isinstance(node, LatexMathNode):
-        if node.delimiters == ("$", "$"):
-            node.delimiters = ("\\(", "\\)")
+    if isinstance(node, LatexMathNode) and node.delimiters == ("$", "$"):
+        node.delimiters = ("\\(", "\\)")
     return node
 
 
@@ -111,23 +109,25 @@ def _replace_dots(node, *_):
 
 
 def _replace_over(node, *_):
-    if isinstance(node, LatexGroupNode):
-        k0 = None
-        for k, n2 in enumerate(node.nodelist):
-            if isinstance(n2, LatexMacroNode) and n2.macroname == "over":
-                k0 = k
-                break
+    if not isinstance(node, LatexGroupNode):
+        return node
 
-        if k0 is not None:
-            # We found an \over. Create a \frac from the rest of the nodes.
-            return _macro("frac", node.nodelist[:k0], node.nodelist[k0 + 1 :])
-    return node
+    k0 = None
+    for k, n2 in enumerate(node.nodelist):
+        if isinstance(n2, LatexMacroNode) and n2.macroname == "over":
+            k0 = k
+            break
+
+    if k0 is None:
+        return node
+
+    # We found an \over. Create a \frac from the rest of the nodes.
+    return _macro("frac", node.nodelist[:k0], node.nodelist[k0 + 1 :])
 
 
 def _replace_def_by_newcommand(node, *_):
-    if isinstance(node, LatexMacroNode):
-        if node.macroname == "def":
-            node.macroname = "newcommand"
+    if isinstance(node, LatexMacroNode) and node.macroname == "def":
+        node.macroname = "newcommand"
     return node
 
 
@@ -142,15 +142,16 @@ def _add_backslash_for_keywords(node, is_math_mode, *_):
 
 
 def _replace_eqnarray(node, *_):
-    if isinstance(node, LatexEnvironmentNode):
-        # Also set envname, should be removed at some point
-        # TODO https://github.com/phfaist/pylatexenc/issues/81
-        if node.environmentname == "eqnarray":
-            node.environmentname = "align"
-            node.envname = "align"
-        elif node.environmentname == "eqnarray*":
-            node.environmentname = "align*"
-            node.envname = "align*"
+    if not isinstance(node, LatexEnvironmentNode):
+        return node
+    # Also set envname, should be removed at some point
+    # TODO https://github.com/phfaist/pylatexenc/issues/81
+    if node.environmentname == "eqnarray":
+        node.environmentname = "align"
+        node.envname = "align"
+    elif node.environmentname == "eqnarray*":
+        node.environmentname = "align*"
+        node.envname = "align*"
     return node
 
 
