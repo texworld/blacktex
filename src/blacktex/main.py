@@ -177,8 +177,8 @@ def _remove_whitespace_before_punctuation(node, *_):
     return node
 
 
-def _replace_double_nbsp(string: str) -> str:
-    return re.sub("~~", r"\\quad ", string)
+def _replace_multi_nbsp(string: str) -> str:
+    return re.sub("[~]{2,}", r"\\quad ", string)
 
 
 def _replace_centerline(string: str) -> str:
@@ -214,7 +214,7 @@ def _remove_multiple_spaces(string: str) -> str:
 
 
 def _remove_multiple_newlines(string: str) -> str:
-    string = re.sub("\n\n\n\n+", "\n\n\n", string)
+    string = re.sub("[\n]{3,}", "\n\n\n", string)
     return string
 
 
@@ -307,7 +307,7 @@ def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -
 
     out = _replace_punctuation_at_math_end(out)
     out = _add_nbsp_before_reference(out)
-    out = _replace_double_nbsp(out)
+    out = _replace_multi_nbsp(out)
     out = _replace_nbsp_space(out)
     out = _si_percentage(out)
     out = _add_linebreak_after_double_backslash(out)
