@@ -167,11 +167,6 @@ def _replace_def_by_newcommand(string: str) -> str:
     return nodelist_to_latex(nodelist)
 
 
-def _replace_punctuation_at_math_end(string: str) -> str:
-    """$a+b.$  ->  $a+b$."""
-    return re.sub(r"([\.,;!\?])\\\)", r"\)\1", string)
-
-
 def _add_backslash_for_keywords(string: str) -> str:
     def _repl(node, is_math_mode):
         if not is_math_mode:
@@ -188,10 +183,6 @@ def _add_backslash_for_keywords(string: str) -> str:
     return nodelist_to_latex(nodelist)
 
 
-def _replace_centerline(string: str) -> str:
-    return re.sub(r"\\centerline{", r"{\\centering ", string)
-
-
 def _replace_eqnarray(string: str) -> str:
     def _repl(node, _):
         if isinstance(node, LatexEnvironmentNode):
@@ -201,6 +192,7 @@ def _replace_eqnarray(string: str) -> str:
                 node.environmentname = "align"
                 node.envname = "align"
             elif node.environmentname == "eqnarray*":
+                node.environmentname = "align*"
                 node.envname = "align*"
         return node
 
@@ -211,9 +203,21 @@ def _replace_eqnarray(string: str) -> str:
 
 
 def _replace_colon_equal_by_coloneqq(string: str) -> str:
-    out = re.sub(r":\s*=", r"\\coloneqq ", string)
-    out = re.sub(r"=\s*:", r"\\eqqcolon ", out)
-    return out
+    def _repl(node, is_math_mode):
+        if not isinstance(node, LatexCharsNode):
+            return node
+        node.chars = re.sub(r":\s*=", r"\\coloneqq ", node.chars)
+        node.chars = re.sub(r"=\s*:", r"\\eqqcolon ", node.chars)
+        return node
+
+    w = LatexWalker(string)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, _repl)
+    return nodelist_to_latex(nodelist)
+
+
+def _replace_centerline(string: str) -> str:
+    return re.sub(r"\\centerline{", r"{\\centering ", string)
 
 
 def _remove_space_before_tabular_column_specification(string: str) -> str:
@@ -319,6 +323,11 @@ def _put_label_on_same_line_as_environment(string: str) -> str:
 
 def _add_linebreak_after_double_backslash(string: str) -> str:
     return re.sub(r"\\\\([^\n])", r"\\\\\n\1", string)
+
+
+def _replace_punctuation_at_math_end(string: str) -> str:
+    """$a+b.$  ->  $a+b$."""
+    return re.sub(r"([\.,;!\?])\\\)", r"\)\1", string)
 
 
 def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -> str:
