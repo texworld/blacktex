@@ -135,7 +135,7 @@ import blacktex
         # escaped percentage sign:
         (r"25\% gain", r"\SI{25}{\%} gain"),
         # https://github.com/nschloe/blacktex/issues/46
-        # (r"\rightline{\bf a}", r"\rightline{\textbf{a}}"),
+        (r"\rightline{\bf a}", r"\rightline{\textbf{a}}"),
     ],
 )
 def test_compare(string, reference):

@@ -16,7 +16,12 @@ from pylatexenc.macrospec import ParsedMacroArgs
 
 def _traverse_tree(nodelist: list, funs: list[Callable], is_math_mode: bool = False):
     for fun in funs:
-        nodelist = [fun(node, is_math_mode) for node in nodelist if node is not None]
+        nodelist_new = []
+        for k, node in enumerate(nodelist):
+            out = fun(node, is_math_mode, nodelist[:k], nodelist[k + 1 :])
+            if out is not None:
+                nodelist_new.append(out)
+        nodelist = nodelist_new
 
     for node in nodelist:
         if hasattr(node, "nodelist"):
@@ -38,7 +43,7 @@ def _macro(macroname, *nodelists):
     )
 
 
-def _remove_comments(node, _):
+def _remove_comments(node, *_):
     """Remove comments."""
     # TODO unless the comment character is the last non-whitespace character in
     # a line. (This is often used in macros etc.)
@@ -47,7 +52,7 @@ def _remove_comments(node, _):
     return node
 
 
-def _replace_dollar_dollar(node, _):
+def _replace_dollar_dollar(node, *_):
     """Replace $$...$$ by \\[...\\]."""
     if isinstance(node, LatexMathNode):
         if node.delimiters == ("$$", "$$"):
@@ -55,7 +60,7 @@ def _replace_dollar_dollar(node, _):
     return node
 
 
-def _replace_dollar(node, _):
+def _replace_dollar(node, *_):
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
     if isinstance(node, LatexMathNode):
         if node.delimiters == ("$", "$"):
@@ -63,7 +68,7 @@ def _replace_dollar(node, _):
     return node
 
 
-def _replace_obsolete_text_mods(node, _):
+def _replace_obsolete_text_mods(node, _, prev_nodes, __):
     r"""Replace {\it foo} by \textit{foo} etc"""
     # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
     replacements = [
@@ -89,12 +94,15 @@ def _replace_obsolete_text_mods(node, _):
     for orig, repl in replacements:
         if child0.macroname == orig:
             node = _macro(repl, node.nodelist[1:])
+            # If the previous node is a macro, wrap the \textit in curly braces.
+            if len(prev_nodes) > 0 and isinstance(prev_nodes[-1], LatexMacroNode):
+                node = LatexGroupNode(nodelist=[node])
             break
 
     return node
 
 
-def _replace_dots(node, _):
+def _replace_dots(node, *_):
     if isinstance(node, LatexMacroNode) and node.macroname == "cdots":
         node.macroname = "dots"
     if isinstance(node, LatexCharsNode) and "..." in node.chars:
@@ -102,7 +110,7 @@ def _replace_dots(node, _):
     return node
 
 
-def _replace_over(node, _):
+def _replace_over(node, *_):
     if isinstance(node, LatexGroupNode):
         k0 = None
         for k, n2 in enumerate(node.nodelist):
@@ -116,14 +124,14 @@ def _replace_over(node, _):
     return node
 
 
-def _replace_def_by_newcommand(node, _):
+def _replace_def_by_newcommand(node, *_):
     if isinstance(node, LatexMacroNode):
         if node.macroname == "def":
             node.macroname = "newcommand"
     return node
 
 
-def _add_backslash_for_keywords(node, is_math_mode):
+def _add_backslash_for_keywords(node, is_math_mode, *_):
     if not is_math_mode:
         return node
     if not isinstance(node, LatexCharsNode):
@@ -133,7 +141,7 @@ def _add_backslash_for_keywords(node, is_math_mode):
     return node
 
 
-def _replace_eqnarray(node, _):
+def _replace_eqnarray(node, *_):
     if isinstance(node, LatexEnvironmentNode):
         # Also set envname, should be removed at some point
         # TODO https://github.com/phfaist/pylatexenc/issues/81
@@ -146,7 +154,7 @@ def _replace_eqnarray(node, _):
     return node
 
 
-def _replace_colon_equal_by_coloneqq(node, _):
+def _replace_colon_equal_by_coloneqq(node, *_):
     if not isinstance(node, LatexCharsNode):
         return node
     node.chars = re.sub(r":\s*=", r"\\coloneqq ", node.chars)
@@ -154,14 +162,14 @@ def _replace_colon_equal_by_coloneqq(node, _):
     return node
 
 
-def _add_space_after_single_subsuperscript(node, _):
+def _add_space_after_single_subsuperscript(node, *_):
     if not isinstance(node, LatexCharsNode):
         return node
     node.chars = re.sub(r"([\^])([^{\\])([^_\^\s\$})])", r"\1\2 \3", node.chars)
     return node
 
 
-def _remove_whitespace_before_punctuation(node, _):
+def _remove_whitespace_before_punctuation(node, *_):
     if not isinstance(node, LatexCharsNode):
         return node
     node.chars = re.sub(r"\s+([\.,;!\?\":])", r"\1", node.chars)
