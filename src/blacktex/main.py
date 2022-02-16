@@ -14,13 +14,14 @@ from pylatexenc.latexwalker import (
 from pylatexenc.macrospec import ParsedMacroArgs
 
 
-def _traverse_tree(nodelist: list, fun: Callable, is_math_mode: bool = False):
-    nodelist = [fun(node, is_math_mode) for node in nodelist if node is not None]
+def _traverse_tree(nodelist: list, funs: list[Callable], is_math_mode: bool = False):
+    for fun in funs:
+        nodelist = [fun(node, is_math_mode) for node in nodelist if node is not None]
 
     for node in nodelist:
         if hasattr(node, "nodelist"):
             node.nodelist = _traverse_tree(
-                node.nodelist, fun, is_math_mode | isinstance(node, LatexMathNode)
+                node.nodelist, funs, is_math_mode | isinstance(node, LatexMathNode)
             )
 
     return nodelist
@@ -37,52 +38,32 @@ def _macro(macroname, *nodelists):
     )
 
 
-def _remove_comments(string: str) -> str:
+def _remove_comments(node, _):
     """Remove comments."""
     # TODO unless the comment character is the last non-whitespace character in
     # a line. (This is often used in macros etc.)
-    def _rm(node, _):
-        if isinstance(node, LatexCommentNode):
-            return None
-        return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _rm)
-    return nodelist_to_latex(nodelist)
+    if isinstance(node, LatexCommentNode):
+        return None
+    return node
 
 
-def _replace_dollar_dollar(string: str) -> str:
+def _replace_dollar_dollar(node, _):
     """Replace $$...$$ by \\[...\\]."""
-
-    def _repl(node, _):
-        if isinstance(node, LatexMathNode):
-            if node.delimiters == ("$$", "$$"):
-                node.delimiters = ("\\[", "\\]")
-        return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
-    return nodelist_to_latex(nodelist)
+    if isinstance(node, LatexMathNode):
+        if node.delimiters == ("$$", "$$"):
+            node.delimiters = ("\\[", "\\]")
+    return node
 
 
-def _replace_dollar(string: str) -> str:
+def _replace_dollar(node, _):
     """Replace $...$ by \\(...\\). See <https://tex.stackexchange.com/q/510/13262>."""
-
-    def _repl(node, _):
-        if isinstance(node, LatexMathNode):
-            if node.delimiters == ("$", "$"):
-                node.delimiters = ("\\(", "\\)")
-        return node
-
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
-    return nodelist_to_latex(nodelist)
+    if isinstance(node, LatexMathNode):
+        if node.delimiters == ("$", "$"):
+            node.delimiters = ("\\(", "\\)")
+    return node
 
 
-def _replace_obsolete_text_mods(string: str) -> str:
+def _replace_obsolete_text_mods(node, _):
     r"""Replace {\it foo} by \textit{foo} etc"""
     # bracket, don't replace; see <https://github.com/nschloe/blacktex/issues/46>.
     replacements = [
@@ -98,26 +79,19 @@ def _replace_obsolete_text_mods(string: str) -> str:
         # \emph{...} should be preferred to \em.
         ("em", "emph"),
     ]
-
-    def _repl(node, _):
-        if not isinstance(node, LatexGroupNode):
-            return node
-        # See if the first child in the group is a macro, e.g., {\it ...}
-        child0 = node.nodelist[0]
-        if not isinstance(child0, LatexMacroNode):
-            return node
-
-        for orig, repl in replacements:
-            if child0.macroname == orig:
-                node = _macro(repl, node.nodelist[1:])
-                break
-
+    if not isinstance(node, LatexGroupNode):
+        return node
+    # See if the first child in the group is a macro, e.g., {\it ...}
+    child0 = node.nodelist[0]
+    if not isinstance(child0, LatexMacroNode):
         return node
 
-    w = LatexWalker(string)
-    nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
-    return nodelist_to_latex(nodelist)
+    for orig, repl in replacements:
+        if child0.macroname == orig:
+            node = _macro(repl, node.nodelist[1:])
+            break
+
+    return node
 
 
 def _replace_dots(string: str) -> str:
@@ -130,7 +104,7 @@ def _replace_dots(string: str) -> str:
 
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
+    nodelist = _traverse_tree(nodelist, [_repl])
     return nodelist_to_latex(nodelist)
 
 
@@ -150,7 +124,7 @@ def _replace_over(string: str) -> str:
 
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _replace)
+    nodelist = _traverse_tree(nodelist, [_replace])
     return nodelist_to_latex(nodelist)
 
 
@@ -163,7 +137,7 @@ def _replace_def_by_newcommand(string: str) -> str:
 
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
+    nodelist = _traverse_tree(nodelist, [_repl])
     return nodelist_to_latex(nodelist)
 
 
@@ -179,7 +153,7 @@ def _add_backslash_for_keywords(string: str) -> str:
 
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
+    nodelist = _traverse_tree(nodelist, [_repl])
     return nodelist_to_latex(nodelist)
 
 
@@ -198,7 +172,7 @@ def _replace_eqnarray(string: str) -> str:
 
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
+    nodelist = _traverse_tree(nodelist, [_repl])
     return nodelist_to_latex(nodelist)
 
 
@@ -212,7 +186,7 @@ def _replace_colon_equal_by_coloneqq(string: str) -> str:
 
     w = LatexWalker(string)
     nodelist, _, _ = w.get_latex_nodes(pos=0)
-    nodelist = _traverse_tree(nodelist, _repl)
+    nodelist = _traverse_tree(nodelist, [_repl])
     return nodelist_to_latex(nodelist)
 
 
@@ -333,13 +307,22 @@ def _replace_punctuation_at_math_end(string: str) -> str:
 def clean(string: str, keep_comments: bool = False, keep_dollar: bool = False) -> str:
     out = string
     out = _remove_trailing_whitespace(out)
+
+    # now apply all functions that operate on the pylatexenc tree
+    funs = []
     if not keep_comments:
-        out = _remove_comments(out)
-    out = _replace_dollar_dollar(out)
+        funs.append(_remove_comments)
+    funs.append(_replace_dollar_dollar)
     if not keep_dollar:
-        out = _replace_dollar(out)
+        funs.append(_replace_dollar)
+    funs.append(_replace_obsolete_text_mods)
+    #
+    w = LatexWalker(out)
+    nodelist, _, _ = w.get_latex_nodes(pos=0)
+    nodelist = _traverse_tree(nodelist, funs)
+    out = nodelist_to_latex(nodelist)
+
     out = _replace_punctuation_at_math_end(out)
-    out = _replace_obsolete_text_mods(out)
     out = _add_space_after_single_subsuperscript(out)
     out = _replace_dots(out)
     out = _remove_whitespace_before_punctuation(out)
