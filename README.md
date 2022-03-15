@@ -4,25 +4,18 @@
 </p>
 
 [![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg?style=flat-square)](https://pypi.org/project/blacktex/)
-[![Anaconda Cloud](https://anaconda.org/conda-forge/blacktex/badges/version.svg?=style=flat-square)](https://anaconda.org/conda-forge/blacktex/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/blacktex.svg?style=flat-square)](https://pypi.org/project/blacktex/)
 [![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/blacktex)
 [![PyPi downloads](https://img.shields.io/pypi/dm/blacktex.svg?style=flat-square)](https://pypistats.org/packages/blacktex)
 
-[![gh-actions](https://img.shields.io/github/workflow/status/nschloe/blacktex/ci?style=flat-square)](https://github.com/nschloe/blacktex/actions?query=workflow%3Aci)
-[![codecov](https://img.shields.io/codecov/c/github/nschloe/blacktex.svg?style=flat-square)](https://codecov.io/gh/nschloe/blacktex)
-[![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/blacktex.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/blacktex)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
-
-blacktex is a command-line tool that helps with article editing in LaTeX. It removes all
-comments from a given file and corrects [some common
+blacktex is a command-line tool that helps with article editing in LaTeX. It
+removes all comments from a given file and corrects [some common
 anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf).
 
 Install with one of
 
 ```
 pip install -U blacktex
-conda install -c conda-forge blacktex
 ```
 
 Then, with
@@ -57,8 +50,3 @@ blacktex -i in0.tex in1.tex ...
 ```
 
 to modify files in-place. See `blacktex -h` for all options.
-
-### License
-
-This software is published under the [GPLv3
-license](https://www.gnu.org/licenses/gpl-3.0.en.html).

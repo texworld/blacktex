@@ -1,8 +1,0 @@
-- id: blacktex
-  name: blacktex
-  description: "Clean up LaTeX files."
-  entry: blacktex
-  language: python
-  language_version: python3
-  types: ['tex']
-  args: [--in-place]
