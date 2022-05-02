@@ -1,11 +1,11 @@
 <p align="center">
-  <a href="https://github.com/nschloe/blacktex"><img alt="blacktex" src="https://nschloe.github.io/blacktex/logo.svg" width="60%"></a>
+  <a href="https://github.com/texworld/blacktex"><img alt="blacktex" src="https://texworld.github.io/blacktex/logo.svg" width="60%"></a>
   <p align="center">Clean up your LaTeX files.</p>
 </p>
 
 [![PyPi Version](https://img.shields.io/pypi/v/blacktex.svg?style=flat-square)](https://pypi.org/project/blacktex/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/blacktex.svg?style=flat-square)](https://pypi.org/project/blacktex/)
-[![GitHub stars](https://img.shields.io/github/stars/nschloe/blacktex.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/nschloe/blacktex)
+[![GitHub stars](https://img.shields.io/github/stars/texworld/blacktex.svg?style=flat-square&logo=github&label=Stars&logoColor=white)](https://github.com/texworld/blacktex)
 [![PyPi downloads](https://img.shields.io/pypi/dm/blacktex.svg?style=flat-square)](https://pypistats.org/packages/blacktex)
 
 blacktex is a command-line tool that helps with article editing in LaTeX. It
