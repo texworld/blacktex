@@ -12,13 +12,32 @@ blacktex is a command-line tool that helps with article editing in LaTeX. It
 removes all comments from a given file and corrects [some common
 anti-patterns](http://mirrors.ctan.org/info/l2tabu/english/l2tabuen.pdf).
 
-Install with one of
+### Installation
+
+Install blacktex [from PyPI](https://pypi.org/project/blacktex/) with
 
 ```
-pip install -U blacktex
+pip install blacktex
 ```
 
-Then, with
+### How to get a license
+
+TeX World licenses for personal and academic use can be purchased
+[here](https://buy.stripe.com/aEU7vb9xc870f1mbIL).
+You'll receive a confirmation email with a license key.
+Install the key with
+
+```
+plm add <your-license-key>
+```
+
+on your machine and you're good to go.
+
+For commerical use, please contact support@mondaytech.com.
+
+## Using blacktex
+
+With
 
 ```
 blacktex in.tex > out.tex
